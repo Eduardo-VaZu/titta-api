@@ -24,11 +24,11 @@ public class SedeMapper {
         sede.setEstado(dto.getEstado());
 
         Direccion direccion = new Direccion();
-        direccion.setCalle(dto.getDireccion().getCalle());
-        direccion.setNumeroExterior(dto.getDireccion().getNumeroExterior());
-        direccion.setCodigoPostal(dto.getDireccion().getCodigoPostal());
-        direccion.setCiudad(dto.getDireccion().getCiudad());
-        direccion.setEstadoProvincial(dto.getDireccion().getEstadoProvincial());
+        direccion.setCalle(dto.getDireccionRequestDto().getCalle());
+        direccion.setNumeroExterior(dto.getDireccionRequestDto().getNumeroExterior());
+        direccion.setCodigoPostal(dto.getDireccionRequestDto().getCodigoPostal());
+        direccion.setCiudad(dto.getDireccionRequestDto().getCiudad());
+        direccion.setEstadoProvincial(dto.getDireccionRequestDto().getEstadoProvincial());
         sede.setDireccion(direccion);
 
         if(dto.getHorariosOperacion() != null && !dto.getHorariosOperacion().isEmpty()){
