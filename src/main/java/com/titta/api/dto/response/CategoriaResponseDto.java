@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CategoriaResponseDto {
+
     private Long idCategoria;
+
     private String nombreCategoria;
+
 }
