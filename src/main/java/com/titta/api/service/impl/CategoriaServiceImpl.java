@@ -2,6 +2,7 @@ package com.titta.api.service.impl;
 
 import com.titta.api.dto.request.CategoriaRequestDto;
 import com.titta.api.dto.response.CategoriaResponseDto;
+import com.titta.api.exception.DuplicateResourceException;
 import com.titta.api.mapper.CategoriaMapper;
 import com.titta.api.model.Categoria;
 import com.titta.api.repository.CategoriaRepository;
@@ -24,12 +25,8 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     public CategoriaResponseDto crearCategoria(CategoriaRequestDto categoriaDto) {
 
-        if (categoriaDto.getNombreCategoria() == null || categoriaDto.getNombreCategoria().trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre de la categoría no puede ser nulo o estar vacío.");
-        }
-
         if (categoriaRepository.existsByNombreCategoria(categoriaDto.getNombreCategoria())) {
-            throw new IllegalArgumentException("Ya existe una categoría con el nombre '" + categoriaDto.getNombreCategoria() + "'.");
+            throw new DuplicateResourceException("Ya existe una categoría con el nombre '" + categoriaDto.getNombreCategoria() + "'.");
         }
 
         Categoria categoria = categoriaMapper.toCategoria(categoriaDto);
