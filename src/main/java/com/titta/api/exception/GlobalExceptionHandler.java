@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Manejador para nuestra excepción personalizada ResourceNotFoundException
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
@@ -24,7 +23,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
-    // Manejador para excepciones de argumentos inválidos (ej: SKU duplicado)
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
@@ -35,7 +33,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Un manejador general para cualquier otra excepción no controlada
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
         ErrorResponse errorResponse = new ErrorResponse(
