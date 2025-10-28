@@ -43,7 +43,7 @@ public class Producto {
     @EqualsAndHashCode.Exclude
     private Categoria categoria;
 
-    @OneToOne(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @EqualsAndHashCode.Exclude
     @JsonIgnore
     private ImagenProducto imagen;

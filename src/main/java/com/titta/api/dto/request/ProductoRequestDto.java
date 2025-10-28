@@ -21,6 +21,7 @@ public class ProductoRequestDto {
     @Data
     public static class InagenRequestDto {
         private String imagenUrl;
+        private String altText;
     }
 
     @Data

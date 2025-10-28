@@ -28,6 +28,7 @@ public class ProductoMapper {
 
         ImagenProducto imagenProducto = new ImagenProducto();
         imagenProducto.setImagenUrl(requestDto.getImagen().getImagenUrl());
+        imagenProducto.setAltText(requestDto.getImagen().getAltText());
         imagenProducto.setProducto(producto);
         producto.setImagen(imagenProducto);
 
@@ -69,7 +70,7 @@ public class ProductoMapper {
             ProductoResponseDto.ImagenResponseDto imagenDto = new ProductoResponseDto.ImagenResponseDto();
             imagenDto.setIdImagen(producto.getImagen().getIdImagen());
             imagenDto.setImagenUrl(producto.getImagen().getImagenUrl());
-            imagenDto.setAltText(null);
+            imagenDto.setAltText(producto.getImagen().getAltText());
             responseDto.setImagenes(imagenDto);
         }
 
