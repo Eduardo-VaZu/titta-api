@@ -13,7 +13,7 @@ public class ProductoRequestDto {
     private String sku;
     private String descripcion;
     private BigDecimal precio;
-    private boolean estadoProducto;
+    private Boolean estadoProducto;
     private Long idCategoria;
     private InagenRequestDto imagen;
     private List<StockSedeRequestDto> stockSede;

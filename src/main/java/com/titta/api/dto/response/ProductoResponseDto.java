@@ -13,9 +13,9 @@ public class ProductoResponseDto {
     private String sku;
     private String descripcion;
     private BigDecimal precio;
-    private boolean estadoProducto;
+    private Boolean estadoProducto;
     private CategoriaResponseDto categoria;
-    private List<InagenResponseDto> imagenes;
+    private ImagenResponseDto imagenes;
     private List<StockSedeResponseDto> stockSede;
 
     @Data
@@ -25,7 +25,7 @@ public class ProductoResponseDto {
     }
 
     @Data
-    public static class InagenResponseDto {
+    public static class ImagenResponseDto {
         private Long idImagen;
         private String imagenUrl;
         private String altText;

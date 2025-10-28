@@ -1,14 +1,10 @@
 package com.titta.api.mapper;
 
-import com.titta.api.dto.request.ImagenRequestDto;
 import com.titta.api.dto.request.ProductoRequestDto;
 import com.titta.api.dto.response.ProductoResponseDto;
 import com.titta.api.model.*;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Component
@@ -24,7 +20,7 @@ public class ProductoMapper {
         producto.setSku(requestDto.getSku());
         producto.setDescripcion(requestDto.getDescripcion());
         producto.setPrecio(requestDto.getPrecio());
-        producto.setEstadoProducto(requestDto.isEstadoProducto());
+        producto.setEstadoProducto(requestDto.getEstadoProducto());
 
         Categoria categoria = new Categoria();
         categoria.setIdCategoria(requestDto.getIdCategoria());
@@ -60,7 +56,7 @@ public class ProductoMapper {
         responseDto.setSku(producto.getSku());
         responseDto.setDescripcion(producto.getDescripcion());
         responseDto.setPrecio(producto.getPrecio());
-        responseDto.setEstadoProducto(producto.isEstadoProducto());
+        responseDto.setEstadoProducto(producto.getEstadoProducto());
 
         if (producto.getCategoria() != null) {
             ProductoResponseDto.CategoriaResponseDto categoriaDto = new ProductoResponseDto.CategoriaResponseDto();
@@ -70,11 +66,11 @@ public class ProductoMapper {
         }
 
         if (producto.getImagen() != null) {
-            ProductoResponseDto.InagenResponseDto imagenDto = new ProductoResponseDto.InagenResponseDto();
+            ProductoResponseDto.ImagenResponseDto imagenDto = new ProductoResponseDto.ImagenResponseDto();
             imagenDto.setIdImagen(producto.getImagen().getIdImagen());
             imagenDto.setImagenUrl(producto.getImagen().getImagenUrl());
             imagenDto.setAltText(null);
-            responseDto.setImagenes(Collections.singletonList(imagenDto));
+            responseDto.setImagenes(imagenDto);
         }
 
         if (producto.getStocks() != null && !producto.getStocks().isEmpty()) {

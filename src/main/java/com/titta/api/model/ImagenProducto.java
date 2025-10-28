@@ -26,4 +26,7 @@ public class ImagenProducto {
     @Column(name = "imagen_url", nullable = false)
     private String imagenUrl;
 
+    @Column(name = "alt_text", nullable = false)
+    private String altText;
+
 }

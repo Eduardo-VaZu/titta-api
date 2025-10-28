@@ -52,7 +52,7 @@ public class CategoriaController {
                             schema = @Schema(type = "array", implementation = CategoriaResponseDto.class)))
     })
     @GetMapping
-    public ResponseEntity<List<CategoriaResponseDto>> obterCategorias() {
+    public ResponseEntity<List<CategoriaResponseDto>> obtenerCategorias() {
         List<CategoriaResponseDto> categorias = categoriaService.obterCategorias();
         return new ResponseEntity<>(categorias, HttpStatus.OK);
     }

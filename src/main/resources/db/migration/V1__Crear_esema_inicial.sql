@@ -2,6 +2,7 @@
 -- 1. TABLAS SIN DEPENDENCIAS EXTERNAS
 -- =================================================================
 
+
 -- Entidad: Rol
 CREATE TABLE tbl_rol (
                          id_rol BIGINT AUTO_INCREMENT PRIMARY KEY,
