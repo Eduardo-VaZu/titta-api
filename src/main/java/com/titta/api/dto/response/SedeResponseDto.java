@@ -40,7 +40,7 @@ public class SedeResponseDto {
     }
 
     @Data
-    public class HorarioSedeResponseDTO {
+    public static class HorarioSedeResponseDTO {
 
         private Long idHorarioOperacionSede;
 

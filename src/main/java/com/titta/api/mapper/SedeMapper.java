@@ -1,8 +1,6 @@
 package com.titta.api.mapper;
 
 import com.titta.api.dto.request.SedeRequestDto;
-import com.titta.api.dto.response.DireccionResponseDto;
-import com.titta.api.dto.response.HorarioSedeResponseDTO;
 import com.titta.api.dto.response.SedeResponseDto;
 import com.titta.api.model.Direccion;
 import com.titta.api.model.HorarioOperacionSede;
@@ -45,8 +43,8 @@ public class SedeMapper {
         return sede;
     }
 
-    public SedeResponseDto toSedeResponseDto(Sede sede){
-        if(sede == null){
+    public SedeResponseDto toSedeResponseDto(Sede sede) {
+        if (sede == null) {
             return null;
         }
         SedeResponseDto dto = new SedeResponseDto();
@@ -54,7 +52,28 @@ public class SedeMapper {
         dto.setNombreSede(sede.getNombreSede());
         dto.setTelefono(sede.getTelefono());
         dto.setEstado(sede.getEstado());
-        dto.setDireccion(sede.getDireccion());
+
+        SedeResponseDto.DireccionResponseDto direccionDto = new SedeResponseDto.DireccionResponseDto();
+        direccionDto.setIdDireccion(sede.getDireccion().getIdDireccion());
+        direccionDto.setCalle(sede.getDireccion().getCalle());
+        direccionDto.setNumeroExterior(sede.getDireccion().getNumeroExterior());
+        direccionDto.setCodigoPostal(sede.getDireccion().getCodigoPostal());
+        direccionDto.setCiudad(sede.getDireccion().getCiudad());
+        direccionDto.setEstadoProvincial(sede.getDireccion().getEstadoProvincial());
+        dto.setDireccion(direccionDto);
+        
+        dto.setHorariosOperacion(sede.getHorariosOperacion()
+                .stream()
+                .map(horarioDto -> {
+                    SedeResponseDto.HorarioSedeResponseDTO horarioSedeDto = new SedeResponseDto.HorarioSedeResponseDTO();
+                    horarioSedeDto.setIdHorarioOperacionSede(horarioDto.getIdHorarioOperacionSede());
+                    horarioSedeDto.setDiaSemana(horarioDto.getDiaSemana());
+                    horarioSedeDto.setHoraApertura(horarioDto.getHoraApertura());
+                    horarioSedeDto.setHoraCierre(horarioDto.getHoraCierre());
+                    return horarioSedeDto;
+                })
+                .collect(Collectors.toList()));
+    
         return dto;
     }
 
