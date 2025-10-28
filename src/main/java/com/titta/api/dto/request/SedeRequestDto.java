@@ -1,12 +1,12 @@
 package com.titta.api.dto.request;
 
-import com.titta.api.model.Direccion;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -23,9 +23,38 @@ public class SedeRequestDto {
 
     @NotNull(message = "La dirección es obligatoria.")
     @Valid
-    private DireccionRequestDto direccionRequestDto;
+    private DireccionRequestDto direccion;
 
     @Valid
     private List<HorarioRequestSedeDTO> horariosOperacion;
+
+
+    @Data
+    public static class HorarioRequestSedeDTO {
+
+        private Long idHorarioOperacionSede;
+
+        private String diaSemana;
+
+        private LocalTime horaApertura;
+
+        private LocalTime horaCierre;
+
+    }
+
+    @Data
+    public static class DireccionRequestDto {
+
+        private String calle;
+
+        private String numeroExterior;
+
+        private String codigoPostal;
+
+        private String ciudad;
+
+        private String estadoProvincial;
+
+    }
 
 }

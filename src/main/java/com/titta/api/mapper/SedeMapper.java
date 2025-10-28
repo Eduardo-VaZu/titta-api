@@ -24,11 +24,11 @@ public class SedeMapper {
         sede.setEstado(dto.getEstado());
 
         Direccion direccion = new Direccion();
-        direccion.setCalle(dto.getDireccionRequestDto().getCalle());
-        direccion.setNumeroExterior(dto.getDireccionRequestDto().getNumeroExterior());
-        direccion.setCodigoPostal(dto.getDireccionRequestDto().getCodigoPostal());
-        direccion.setCiudad(dto.getDireccionRequestDto().getCiudad());
-        direccion.setEstadoProvincial(dto.getDireccionRequestDto().getEstadoProvincial());
+        direccion.setCalle(dto.getDireccion().getCalle());
+        direccion.setNumeroExterior(dto.getDireccion().getNumeroExterior());
+        direccion.setCodigoPostal(dto.getDireccion().getCodigoPostal());
+        direccion.setCiudad(dto.getDireccion().getCiudad());
+        direccion.setEstadoProvincial(dto.getDireccion().getEstadoProvincial());
         sede.setDireccion(direccion);
 
         if(dto.getHorariosOperacion() != null && !dto.getHorariosOperacion().isEmpty()){
@@ -54,37 +54,8 @@ public class SedeMapper {
         dto.setNombreSede(sede.getNombreSede());
         dto.setTelefono(sede.getTelefono());
         dto.setEstado(sede.getEstado());
-        dto.setDireccionRequestDto(toDireccionResponseDto(sede.getDireccion()));
-        dto.setHorariosOperacion(sede.getHorariosOperacion()
-                .stream()
-                .map(this::toHorarioResponseDTO)
-                .collect(Collectors.toList()));
+        dto.setDireccion(sede.getDireccion());
         return dto;
     }
 
-    public DireccionResponseDto toDireccionResponseDto(Direccion direccion){
-        if(direccion == null){
-            return null;
-        }
-        DireccionResponseDto dto = new DireccionResponseDto();
-        dto.setIdDireccion(direccion.getIdDireccion());
-        dto.setCalle(direccion.getCalle());
-        dto.setNumeroExterior(direccion.getNumeroExterior());
-        dto.setCodigoPostal(direccion.getCodigoPostal());
-        dto.setCiudad(direccion.getCiudad());
-        dto.setEstadoProvincial(direccion.getEstadoProvincial());
-        return dto;
-    }
-
-    public HorarioSedeResponseDTO toHorarioResponseDTO(HorarioOperacionSede horario) {
-        if (horario == null) {
-            return null;
-        }
-        HorarioSedeResponseDTO dto = new HorarioSedeResponseDTO();
-        dto.setIdHorarioOperacionSede(horario.getIdHorarioOperacionSede());
-        dto.setDiaSemana(horario.getDiaSemana());
-        dto.setHoraApertura(horario.getHoraApertura());
-        dto.setHoraCierre(horario.getHoraCierre());
-        return dto;
-    }
 }

@@ -3,6 +3,7 @@ package com.titta.api.dto.response;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
@@ -17,8 +18,39 @@ public class SedeResponseDto {
 
     private Boolean estado;
 
-    private DireccionResponseDto direccionRequestDto;
+    private DireccionResponseDto direccion;
 
     private List<HorarioSedeResponseDTO> horariosOperacion;
+
+    @Data
+    public static class DireccionResponseDto {
+
+        private Long idDireccion;
+
+        private String calle;
+
+        private String numeroExterior;
+
+        private String codigoPostal;
+
+        private String ciudad;
+
+        private String estadoProvincial;
+
+    }
+
+    @Data
+    public class HorarioSedeResponseDTO {
+
+        private Long idHorarioOperacionSede;
+
+        private String diaSemana;
+
+        private LocalTime horaApertura;
+
+        private LocalTime horaCierre;
+
+    }
+
 
 }
