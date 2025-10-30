@@ -1,6 +1,5 @@
 package com.titta.api.controller;
 
-import com.titta.api.dto.request.CategoriaRequestDto;
 import com.titta.api.dto.response.CategoriaResponseDto;
 import com.titta.api.exception.error.ErrorResponse;
 import com.titta.api.service.CategoriaService;

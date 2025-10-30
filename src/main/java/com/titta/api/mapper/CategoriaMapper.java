@@ -1,6 +1,5 @@
 package com.titta.api.mapper;
 
-import com.titta.api.dto.request.CategoriaRequestDto;
 import com.titta.api.dto.response.CategoriaResponseDto;
 import com.titta.api.model.Categoria;
 import org.springframework.stereotype.Component;

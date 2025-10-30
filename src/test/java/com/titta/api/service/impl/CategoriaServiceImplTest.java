@@ -1,6 +1,5 @@
 package com.titta.api.service.impl;
 
-import com.titta.api.dto.request.CategoriaRequestDto;
 import com.titta.api.dto.response.CategoriaResponseDto;
 import com.titta.api.exception.DuplicateResourceException;
 import com.titta.api.mapper.CategoriaMapper;

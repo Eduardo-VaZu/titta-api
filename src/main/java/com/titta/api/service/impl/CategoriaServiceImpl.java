@@ -25,8 +25,8 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     public CategoriaResponseDto crearCategoria(CategoriaRequestDto categoriaDto) {
 
-        if (categoriaRepository.existsByNombreCategoria(categoriaDto.getNombreCategoria())) {
-            throw new DuplicateResourceException("Ya existe una categoría con el nombre '" + categoriaDto.getNombreCategoria() + "'.");
+        if (categoriaRepository.existsByNombreCategoria(categoriaDto.nombreCategoria())) {
+            throw new DuplicateResourceException("Ya existe una categoría con el nombre '" + categoriaDto.nombreCategoria() + "'.");
         }
 
         Categoria categoria = categoriaMapper.toCategoria(categoriaDto);
