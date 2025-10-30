@@ -27,8 +27,8 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional
     public ProductoResponseDto crearProducto(ProductoRequestDto productoDto) {
-        if (productoRepository.existsBySku(productoDto.getSku())) {
-            throw new DuplicateResourceException("Ya existe un producto con el SKU '" + productoDto.getSku() + "'.");
+        if (productoRepository.existsBySku(productoDto.sku())) {
+            throw new DuplicateResourceException("Ya existe un producto con el SKU '" + productoDto.sku() + "'.");
         }
 
         Producto producto = productoMapper.toProducto(productoDto);

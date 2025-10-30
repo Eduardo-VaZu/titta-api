@@ -5,6 +5,8 @@ import com.titta.api.dto.response.ProductoResponseDto;
 import com.titta.api.model.*;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -15,33 +17,36 @@ public class ProductoMapper {
             return null;
         }
 
-        Producto producto = new Producto();
-        producto.setNombreProducto(requestDto.nombreProducto());
-        producto.setSku(requestDto.sku());
-        producto.setDescripcion(requestDto.descripcion());
-        producto.setPrecio(requestDto.precio());
-        producto.setEstadoProducto(requestDto.estadoProducto());
+        Producto producto = Producto.builder()
+                .nombreProducto(requestDto.nombreProducto())
+                .sku(requestDto.sku())
+                .descripcion(requestDto.descripcion())
+                .precio(requestDto.precio())
+                .estadoProducto(requestDto.estadoProducto())
+                .categoria(Categoria.builder()
+                        .idCategoria(requestDto.idCategoria())
+                        .build())
+                .build();
 
-        Categoria categoria = new Categoria();
-        categoria.setIdCategoria(requestDto.idCategoria());
-        producto.setCategoria(categoria);
-
-        ImagenProducto imagenProducto = new ImagenProducto();
-        imagenProducto.setImagenUrl(requestDto.imagen().imagenUrl());
-        imagenProducto.setAltText(requestDto.imagen().altText());
-        imagenProducto.setProducto(producto);
+        ImagenProducto imagenProducto = ImagenProducto.builder()
+                .imagenUrl(requestDto.imagen().imagenUrl())
+                .altText(requestDto.imagen().altText())
+                .producto(producto)
+                .build();
         producto.setImagen(imagenProducto);
 
         if (requestDto.stockSede() != null && !requestDto.stockSede().isEmpty()) {
-            producto.setStocks(requestDto.stockSede().stream().map(stockDto -> {
-                StockSede stockSede = new StockSede();
-                Sede sede = new Sede();
-                sede.setIdSede(stockDto.idSede());
-                stockSede.setSede(sede);
-                stockSede.setCantidad(stockDto.stock());
-                stockSede.setProducto(producto);
-                return stockSede;
-            }).collect(Collectors.toSet()));
+            Set<StockSede> stocks = requestDto.stockSede().stream()
+                    .map(stockDto -> StockSede.builder()
+                            .id(StockSedeId.builder()
+                                    .idSede(stockDto.idSede())
+                                    .build())
+                            .sede(Sede.builder().idSede(stockDto.idSede()).build())
+                            .cantidad(stockDto.stock())
+                            .producto(producto)
+                            .build())
+                    .collect(Collectors.toSet());
+            producto.setStocks(stocks);
         }
 
         return producto;
@@ -52,41 +57,44 @@ public class ProductoMapper {
             return null;
         }
 
-        ProductoResponseDto responseDto = new ProductoResponseDto(
+        ProductoResponseDto.CategoriaResponseDto categoriaDto = null;
+        if (producto.getCategoria() != null) {
+            categoriaDto = new ProductoResponseDto.CategoriaResponseDto(
+                    producto.getCategoria().getIdCategoria(),
+                    producto.getCategoria().getNombreCategoria()
+            );
+        }
+
+        ProductoResponseDto.ImagenResponseDto imagenDto = null;
+        if (producto.getImagen() != null) {
+            imagenDto = new ProductoResponseDto.ImagenResponseDto(
+                    producto.getImagen().getIdImagen(),
+                    producto.getImagen().getImagenUrl(),
+                    producto.getImagen().getAltText()
+            );
+        }
+
+        List<ProductoResponseDto.StockSedeResponseDto> stockSedeList = null;
+        if (producto.getStocks() != null && !producto.getStocks().isEmpty()) {
+            stockSedeList = producto.getStocks().stream().map(stockSede ->
+                    new ProductoResponseDto.StockSedeResponseDto(
+                            stockSede.getSede().getIdSede(),
+                            stockSede.getSede().getNombreSede(),
+                            stockSede.getCantidad()
+                    )
+            ).collect(Collectors.toList());
+        }
+
+        return new ProductoResponseDto(
                 producto.getNombreProducto(),
                 producto.getSku(),
                 producto.getDescripcion(),
                 producto.getPrecio(),
                 producto.getEstadoProducto(),
-
+                categoriaDto,
+                imagenDto,
+                stockSedeList
         );
-        
-        if (producto.getCategoria() != null) {
-            ProductoResponseDto.CategoriaResponseDto categoriaDto = new ProductoResponseDto.CategoriaResponseDto();
-            categoriaDto.setIdCategoria(producto.getCategoria().getIdCategoria());
-            categoriaDto.setNombreCategoria(producto.getCategoria().getNombreCategoria());
-            responseDto.setCategoria(categoriaDto);
-        }
-
-        if (producto.getImagen() != null) {
-            ProductoResponseDto.ImagenResponseDto imagenDto = new ProductoResponseDto.ImagenResponseDto();
-            imagenDto.setIdImagen(producto.getImagen().getIdImagen());
-            imagenDto.setImagenUrl(producto.getImagen().getImagenUrl());
-            imagenDto.setAltText(producto.getImagen().getAltText());
-            responseDto.setImagenes(imagenDto);
-        }
-
-        if (producto.getStocks() != null && !producto.getStocks().isEmpty()) {
-            responseDto.setStockSede(producto.getStocks().stream().map(stockSede -> {
-                ProductoResponseDto.StockSedeResponseDto stockDto = new ProductoResponseDto.StockSedeResponseDto();
-                stockDto.setIdSede(stockSede.getSede().getIdSede());
-                stockDto.setNombreSede(stockSede.getSede().getNombreSede());
-                stockDto.setStock(stockSede.getCantidad());
-                return stockDto;
-            }).collect(Collectors.toList()));
-        }
-
-        return responseDto;
     }
 
 }

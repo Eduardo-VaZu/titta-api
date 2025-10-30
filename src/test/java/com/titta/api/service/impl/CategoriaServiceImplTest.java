@@ -44,9 +44,7 @@ class CategoriaServiceImplTest {
         categoria.setNombreCategoria("Electrónica");
 
         // 3. Datos de salida (Response)
-        categoriaResponseDto = new CategoriaResponseDto();
-        categoriaResponseDto.setIdCategoria(1L);
-        categoriaResponseDto.setNombreCategoria("Electrónica");
+        categoriaResponseDto = new CategoriaResponseDto(1L, "Electrónica");
     }
 
     @Test
@@ -62,8 +60,8 @@ class CategoriaServiceImplTest {
 
         // Assert (Verificar que el resultado es el esperado)
         assertNotNull(resultado);
-        assertEquals("Electrónica", resultado.getNombreCategoria());
-        assertEquals(1L, resultado.getIdCategoria());
+        assertEquals("Electrónica", resultado.nombreCategoria());
+        assertEquals(1L, resultado.idCategoria());
     }
 
     @Test

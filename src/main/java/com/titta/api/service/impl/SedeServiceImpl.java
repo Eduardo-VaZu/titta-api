@@ -26,8 +26,8 @@ public class SedeServiceImpl implements SedeService {
     @Override
     @Transactional
     public SedeResponseDto crearSede(SedeRequestDto sedeDto) {
-        if (sedeRepository.existsByNombreSede(sedeDto.getNombreSede())) {
-            throw new DuplicateResourceException("Ya existe una sede con el nombre '" + sedeDto.getNombreSede() + "'.");
+        if (sedeRepository.existsByNombreSede(sedeDto.nombreSede())) {
+            throw new DuplicateResourceException("Ya existe una sede con el nombre '" + sedeDto.nombreSede() + "'.");
         }
 
         Sede sede = sedeMapper.toSede(sedeDto);

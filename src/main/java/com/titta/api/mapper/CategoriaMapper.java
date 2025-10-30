@@ -12,20 +12,20 @@ public class CategoriaMapper {
         if (dto == null) {
             return null;
         }
-        Categoria categoria = new Categoria();
-        categoria.setNombreCategoria(dto.nombreCategoria());
-        return categoria;
+        return Categoria.builder()
+                .nombreCategoria(dto.nombreCategoria())
+                .build();
     }
 
     public CategoriaResponseDto toCategoriaResponseDto(Categoria categoria) {
         if (categoria == null) {
             return null;
         }
-        CategoriaResponseDto dto = new CategoriaResponseDto(
+
+        return new CategoriaResponseDto(
                 categoria.getIdCategoria(),
                 categoria.getNombreCategoria()
         );
-        return dto;
     }
 
 }

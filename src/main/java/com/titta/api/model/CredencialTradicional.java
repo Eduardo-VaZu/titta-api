@@ -1,16 +1,14 @@
 package com.titta.api.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "tbl_credencial_tradicional")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CredencialTradicional {
 
     @Id

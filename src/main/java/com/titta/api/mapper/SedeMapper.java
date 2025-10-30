@@ -7,37 +7,40 @@ import com.titta.api.model.HorarioOperacionSede;
 import com.titta.api.model.Sede;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 public class SedeMapper {
 
-    public Sede toSede(SedeRequestDto dto){
-        if(dto == null){
+    public Sede toSede(SedeRequestDto dto) {
+        if (dto == null) {
             return null;
         }
-        Sede sede = new Sede();
-        sede.setNombreSede(dto.getNombreSede());
-        sede.setTelefono(dto.getTelefono());
-        sede.setEstado(dto.getEstado());
+        Sede sede = Sede.builder()
+                .nombreSede(dto.nombreSede())
+                .telefono(dto.telefono())
+                .estado(dto.estado())
+                .direccion(Direccion.builder()
+                        .calle(dto.direccion().calle())
+                        .numeroExterior(dto.direccion().numeroExterior())
+                        .codigoPostal(dto.direccion().codigoPostal())
+                        .ciudad(dto.direccion().ciudad())
+                        .estadoProvincial(dto.direccion().estadoProvincial())
+                        .build())
+                .build();
 
-        Direccion direccion = new Direccion();
-        direccion.setCalle(dto.getDireccion().getCalle());
-        direccion.setNumeroExterior(dto.getDireccion().getNumeroExterior());
-        direccion.setCodigoPostal(dto.getDireccion().getCodigoPostal());
-        direccion.setCiudad(dto.getDireccion().getCiudad());
-        direccion.setEstadoProvincial(dto.getDireccion().getEstadoProvincial());
-        sede.setDireccion(direccion);
-
-        if(dto.getHorariosOperacion() != null && !dto.getHorariosOperacion().isEmpty()){
-            dto.getHorariosOperacion().forEach(horario -> {
-                HorarioOperacionSede horarioOperacionSede = new HorarioOperacionSede();
-                horarioOperacionSede.setDiaSemana(horario.getDiaSemana());
-                horarioOperacionSede.setHoraApertura(horario.getHoraApertura());
-                horarioOperacionSede.setHoraCierre(horario.getHoraCierre());
-                horarioOperacionSede.setSede(sede);
-                sede.getHorariosOperacion().add(horarioOperacionSede);
-            });
+        if (dto.horariosOperacion() != null && !dto.horariosOperacion().isEmpty()) {
+            Set<HorarioOperacionSede> horarios = dto.horariosOperacion().stream()
+                    .map(horarioDTO -> HorarioOperacionSede.builder()
+                            .diaSemana(horarioDTO.diaSemana())
+                            .horaApertura(horarioDTO.horaApertura())
+                            .horaCierre(horarioDTO.horaCierre())
+                            .sede(sede)
+                            .build())
+                    .collect(Collectors.toSet());
+            sede.setHorariosOperacion(horarios);
         }
 
         return sede;
@@ -47,34 +50,34 @@ public class SedeMapper {
         if (sede == null) {
             return null;
         }
-        SedeResponseDto dto = new SedeResponseDto();
-        dto.setIdSede(sede.getIdSede());
-        dto.setNombreSede(sede.getNombreSede());
-        dto.setTelefono(sede.getTelefono());
-        dto.setEstado(sede.getEstado());
 
-        SedeResponseDto.DireccionResponseDto direccionDto = new SedeResponseDto.DireccionResponseDto();
-        direccionDto.setIdDireccion(sede.getDireccion().getIdDireccion());
-        direccionDto.setCalle(sede.getDireccion().getCalle());
-        direccionDto.setNumeroExterior(sede.getDireccion().getNumeroExterior());
-        direccionDto.setCodigoPostal(sede.getDireccion().getCodigoPostal());
-        direccionDto.setCiudad(sede.getDireccion().getCiudad());
-        direccionDto.setEstadoProvincial(sede.getDireccion().getEstadoProvincial());
-        dto.setDireccion(direccionDto);
-        
-        dto.setHorariosOperacion(sede.getHorariosOperacion()
+        SedeResponseDto.DireccionResponseDto direccionDto = new SedeResponseDto.DireccionResponseDto(
+                sede.getDireccion().getIdDireccion(),
+                sede.getDireccion().getCalle(),
+                sede.getDireccion().getNumeroExterior(),
+                sede.getDireccion().getCodigoPostal(),
+                sede.getDireccion().getCiudad(),
+                sede.getDireccion().getEstadoProvincial()
+        );
+
+        List<SedeResponseDto.HorarioSedeResponseDTO> horariosDto = sede.getHorariosOperacion()
                 .stream()
-                .map(horarioDto -> {
-                    SedeResponseDto.HorarioSedeResponseDTO horarioSedeDto = new SedeResponseDto.HorarioSedeResponseDTO();
-                    horarioSedeDto.setIdHorarioOperacionSede(horarioDto.getIdHorarioOperacionSede());
-                    horarioSedeDto.setDiaSemana(horarioDto.getDiaSemana());
-                    horarioSedeDto.setHoraApertura(horarioDto.getHoraApertura());
-                    horarioSedeDto.setHoraCierre(horarioDto.getHoraCierre());
-                    return horarioSedeDto;
-                })
-                .collect(Collectors.toList()));
-    
-        return dto;
+                .map(horario -> new SedeResponseDto.HorarioSedeResponseDTO(
+                        horario.getIdHorarioOperacionSede(),
+                        horario.getDiaSemana(),
+                        horario.getHoraApertura(),
+                        horario.getHoraCierre()
+                ))
+                .collect(Collectors.toList());
+
+        return new SedeResponseDto(
+                sede.getIdSede(),
+                sede.getNombreSede(),
+                sede.getTelefono(),
+                sede.getEstado(),
+                direccionDto,
+                horariosDto
+        );
     }
 
 }
