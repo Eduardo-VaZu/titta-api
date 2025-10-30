@@ -1,5 +1,6 @@
 package com.titta.api.service.impl;
 
+import com.titta.api.dto.request.CategoriaRequestDto;
 import com.titta.api.dto.response.CategoriaResponseDto;
 import com.titta.api.exception.DuplicateResourceException;
 import com.titta.api.mapper.CategoriaMapper;
@@ -35,8 +36,7 @@ class CategoriaServiceImplTest {
     @BeforeEach
     void setUp() {
         // 1. Datos de entrada (Request)
-        categoriaRequestDto = new CategoriaRequestDto();
-        categoriaRequestDto.setNombreCategoria("Electrónica");
+        categoriaRequestDto = new CategoriaRequestDto("Electronica");
 
         // 2. Entidad del Modelo
         categoria = new Categoria();

@@ -1,32 +1,30 @@
 package com.titta.api.dto.request;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-public class ProductoRequestDto {
-    private String nombreProducto;
-    private String sku;
-    private String descripcion;
-    private BigDecimal precio;
-    private Boolean estadoProducto;
-    private Long idCategoria;
-    private InagenRequestDto imagen;
-    private List<StockSedeRequestDto> stockSede;
+public record ProductoRequestDto(
+        String nombreProducto,
+        String sku,
+        String descripcion,
+        BigDecimal precio,
+        Boolean estadoProducto,
+        Long idCategoria,
+        InagenRequestDto imagen,
+        List<StockSedeRequestDto> stockSede
+) {
 
-    @Data
-    public static class InagenRequestDto {
-        private String imagenUrl;
-        private String altText;
+    public record InagenRequestDto(
+            String imagenUrl,
+            String altText
+    ) {
     }
 
-    @Data
-    public static class StockSedeRequestDto {
-        private Long idSede;
-        private int stock;
+    public record StockSedeRequestDto(
+            Long idSede,
+            int stock
+    ) {
     }
 }

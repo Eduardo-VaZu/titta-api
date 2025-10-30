@@ -1,56 +1,37 @@
 package com.titta.api.dto.response;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-public class SedeResponseDto {
+public record SedeResponseDto(
+        Long idSede,
+        String nombreSede,
+        String telefono,
+        Boolean estado,
+        DireccionResponseDto direccion,
+        List<HorarioSedeResponseDTO> horariosOperacion
+) {
 
-    private Long idSede;
-
-    private String nombreSede;
-
-    private String telefono;
-
-    private Boolean estado;
-
-    private DireccionResponseDto direccion;
-
-    private List<HorarioSedeResponseDTO> horariosOperacion;
-
-    @Data
-    public static class DireccionResponseDto {
-
-        private Long idDireccion;
-
-        private String calle;
-
-        private String numeroExterior;
-
-        private String codigoPostal;
-
-        private String ciudad;
-
-        private String estadoProvincial;
+    public record DireccionResponseDto(
+            Long idDireccion,
+            String calle,
+            String numeroExterior,
+            String codigoPostal,
+            String ciudad,
+            String estadoProvincial
+    ) {
 
     }
 
-    @Data
-    public static class HorarioSedeResponseDTO {
-
-        private Long idHorarioOperacionSede;
-
-        private String diaSemana;
-
-        private LocalTime horaApertura;
-
-        private LocalTime horaCierre;
+    public record HorarioSedeResponseDTO(
+            Long idHorarioOperacionSede,
+            String diaSemana,
+            LocalTime horaApertura,
+            LocalTime horaCierre
+    ) {
 
     }
-
 
 }

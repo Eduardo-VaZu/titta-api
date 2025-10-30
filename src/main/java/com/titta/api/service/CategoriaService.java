@@ -1,5 +1,6 @@
 package com.titta.api.service;
 
+import com.titta.api.dto.request.CategoriaRequestDto;
 import com.titta.api.dto.response.CategoriaResponseDto;
 
 import java.util.List;

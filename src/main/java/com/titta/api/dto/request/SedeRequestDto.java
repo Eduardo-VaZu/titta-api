@@ -3,57 +3,45 @@ package com.titta.api.dto.request;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-public class SedeRequestDto {
 
-    @NotBlank(message = "El nombre de la sede es obligatorio.")
-    private String nombreSede;
+public record SedeRequestDto(
 
-    private String telefono;
+        @NotBlank(message = "El nombre de la sede es obligatorio.")
+        String nombreSede,
 
-    @NotNull(message = "El estado de la sede es obligatorio.")
-    private Boolean estado;
+        String telefono,
 
-    @NotNull(message = "La dirección es obligatoria.")
-    @Valid
-    private DireccionRequestDto direccion;
+        @NotNull(message = "El estado de la sede es obligatorio.")
+        Boolean estado,
 
-    @Valid
-    private List<HorarioRequestSedeDTO> horariosOperacion;
+        @NotNull(message = "La dirección es obligatoria.")
+        @Valid
+        DireccionRequestDto direccion,
 
+        @Valid
+        List<HorarioRequestSedeDTO> horariosOperacion
+) {
 
-    @Data
-    public static class HorarioRequestSedeDTO {
-
-        private Long idHorarioOperacionSede;
-
-        private String diaSemana;
-
-        private LocalTime horaApertura;
-
-        private LocalTime horaCierre;
+    public record HorarioRequestSedeDTO(
+            Long idHorarioOperacionSede,
+            String diaSemana,
+            LocalTime horaApertura,
+            LocalTime horaCierre
+    ) {
 
     }
 
-    @Data
-    public static class DireccionRequestDto {
-
-        private String calle;
-
-        private String numeroExterior;
-
-        private String codigoPostal;
-
-        private String ciudad;
-
-        private String estadoProvincial;
+    public record DireccionRequestDto(
+            String calle,
+            String numeroExterior,
+            String codigoPostal,
+            String ciudad,
+            String estadoProvincial
+    ) {
 
     }
 
