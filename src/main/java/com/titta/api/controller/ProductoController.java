@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +37,7 @@ public class ProductoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ProductoResponseDto> crearProducto(@Valid @RequestBody ProductoRequestDto productoRequestDto) {
         ProductoResponseDto nuevoProducto = productoService.crearProducto(productoRequestDto);
         return new ResponseEntity<>(nuevoProducto, HttpStatus.CREATED);
@@ -48,6 +50,7 @@ public class ProductoController {
                             schema = @Schema(type = "array", implementation = ProductoResponseDto.class)))
     })
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<ProductoResponseDto>> obtenerTodosLosProductos() {
         List<ProductoResponseDto> productos = productoService.obtenerTodosLosProductos();
         return new ResponseEntity<>(productos, HttpStatus.OK);
@@ -61,6 +64,7 @@ public class ProductoController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ProductoResponseDto> obtenerProductoPorId(@PathVariable Long id) {
         ProductoResponseDto producto = productoService.obtenerProductoPorId(id);
         return new ResponseEntity<>(producto, HttpStatus.OK);

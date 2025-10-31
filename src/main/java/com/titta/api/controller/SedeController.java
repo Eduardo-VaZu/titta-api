@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class SedeController {
                             schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<SedeResponseDto> crearSede(@Valid @RequestBody SedeRequestDto sedeRequestDto) {
         SedeResponseDto nuevaSede = sedeService.crearSede(sedeRequestDto);
         return new ResponseEntity<>(nuevaSede, HttpStatus.CREATED);
@@ -51,6 +53,7 @@ public class SedeController {
                             schema = @Schema(type = "array", implementation = SedeResponseDto.class)))
     })
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<List<SedeResponseDto>> obtenerTodasLasSedes() {
         List<SedeResponseDto> sedes = sedeService.obtenerTodasLasSedes();
         return new ResponseEntity<>(sedes, HttpStatus.OK);
