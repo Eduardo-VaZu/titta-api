@@ -135,7 +135,7 @@ Este proyecto es privado y está en desarrollo.
 
 ## 👨‍💻 Autor
 
-Eduardo Vázquez - [GitHub](https://github.com/Eduardo-VaZu)
+Eduardo Vargas - [GitHub](https://github.com/Eduardo-VaZu)
 
 ---
 
