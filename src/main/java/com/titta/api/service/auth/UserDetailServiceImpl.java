@@ -35,7 +35,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Inyectamos los beans que necesitamos
     @Autowired
     private JwtUtils jwtUtils;
 
@@ -45,7 +44,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
     @Autowired
     private RolRepository rolRepository;
 
-    // Este es el método que ya tenías del paso anterior
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByEmail(username)
@@ -65,66 +63,48 @@ public class UserDetailServiceImpl implements UserDetailsService {
         );
     }
 
-    // ### AÑADE ESTE NUEVO MÉTODO PARA EL REGISTRO ###
     public AuthResponse registerUser(AuthRegisterRequest registerRequest) {
-        // 1. Validamos que el email no esté ya registrado para evitar duplicados.
         if (usuarioRepository.findByEmail(registerRequest.email()).isPresent()) {
             throw new DuplicateResourceException("El correo electrónico ya está registrado.");
         }
 
-        // 2. Buscamos el rol por defecto para un nuevo usuario (en este caso, CLIENTE).
         Rol defaultRol = rolRepository.findByNombreRol(RolEnum.CLIENTE)
                 .orElseThrow(() -> new RuntimeException("Error interno: El rol CLIENTE no se encuentra."));
 
-        // 3. Creamos la entidad Usuario con los datos del DTO.
         Usuario usuario = Usuario.builder()
                 .nombre(registerRequest.nombre())
                 .apellidoPaterno(registerRequest.apellidoPaterno())
                 .apellidoMaterno(registerRequest.apellidoMaterno())
                 .email(registerRequest.email())
-                .estadoUsuario(true) // Activamos el usuario por defecto.
+                .estadoUsuario(true)
                 .rol(defaultRol)
                 .build();
 
-        // 4. Creamos la credencial, encriptando la contraseña que nos llega.
         CredencialTradicional credencial = CredencialTradicional.builder()
                 .usuario(usuario)
                 .passwordHash(passwordEncoder.encode(registerRequest.password()))
                 .build();
 
-        // 5. Establecemos la relación bidireccional entre Usuario y Credencial.
         usuario.setCredencialTradicional(credencial);
 
-        // 6. Guardamos el usuario. Gracias a la cascada (cascade), la credencial se guardará automáticamente.
         Usuario usuarioCreado = usuarioRepository.save(usuario);
 
-        // 7. Devolvemos una respuesta exitosa. No devolvemos un token para forzar al usuario a hacer login.
         return new AuthResponse(usuarioCreado.getEmail(), "Usuario registrado exitosamente", null, true);
     }
 
-    /**
-     * Procesa la solicitud de login, autentica al usuario y genera un token.
-     */
     public AuthResponse loginUser(AuthLoginRequest authLoginRequest) {
         String username = authLoginRequest.username();
         String password = authLoginRequest.password();
 
-        // 1. Autentica al usuario
         Authentication authentication = this.authenticate(username, password);
 
-        // 2. Si la autenticación es exitosa, la guarda en el contexto de seguridad
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 3. Genera el token JWT
         String accessToken = this.jwtUtils.createToken(authentication);
 
-        // 4. Devuelve la respuesta con el token
         return new AuthResponse(username, "Usuario logueado exitosamente", accessToken, true);
     }
 
-    /**
-     * Valida las credenciales del usuario.
-     */
     private Authentication authenticate(String username, String password) {
         UserDetails userDetails = this.loadUserByUsername(username);
 

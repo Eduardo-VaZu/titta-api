@@ -13,23 +13,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/auth") // Ruta base para la autenticación
+@RequestMapping("/api/v1/auth")
 public class AuthenticationController {
 
     @Autowired
     private UserDetailServiceImpl userDetailService;
 
-    /**
-     * Endpoint público para que los usuarios inicien sesión.
-     * No necesita token para ser accedido.
-     */
     @PostMapping("/log-in")
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid AuthLoginRequest userRequest) {
         AuthResponse response = this.userDetailService.loginUser(userRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // (Opcional) Aquí podrías añadir un endpoint para registrar usuarios:
     @PostMapping("/sign-up")
     public ResponseEntity<AuthResponse> register(@RequestBody @Valid AuthRegisterRequest registerRequest) {
         AuthResponse response = userDetailService.registerUser(registerRequest);

@@ -191,3 +191,8 @@ CREATE TABLE tbl_detalle_venta (
                                    CONSTRAINT fk_detalleventa_venta FOREIGN KEY (id_venta) REFERENCES tbl_venta(id_venta),
                                    CONSTRAINT fk_detalleventa_producto FOREIGN KEY (id_producto) REFERENCES tbl_producto(id_producto)
 );
+
+-- =================================================================
+-- 5. INSERCIÓN DE DATOS INICIALES
+-- =================================================================
+INSERT INTO tbl_rol (nombre_rol) VALUES ('ADMINISTRADOR'), ('CLIENTE'), ('EMPLEADO');

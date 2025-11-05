@@ -1,5 +1,3 @@
-// Ubicación: com/titta/api/dto/auth/AuthRegisterRequest.java
-
 package com.titta.api.dto.auth;
 
 import jakarta.validation.constraints.Email;
