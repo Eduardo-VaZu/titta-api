@@ -408,14 +408,6 @@ Este es un proyecto privado en desarrollo activo. Si deseas contribuir:
 - `test:` Agregar o modificar tests
 - `chore:` Mantenimiento
 
-## 📞 Soporte y Contacto
-
-¿Tienes preguntas o encontraste un bug?
-
-- 📧 Email: eduardo.vazquez@titta.com
-- 🐛 Issues: [GitHub Issues](https://github.com/Eduardo-VaZu/titta-api/issues)
-- 💬 Discussions: [GitHub Discussions](https://github.com/Eduardo-VaZu/titta-api/discussions)
-
 ## 📝 Licencia
 
 Este proyecto es **privado** y está en desarrollo activo. 
@@ -424,10 +416,10 @@ Todos los derechos reservados © 2025 Titta
 
 ## 👨‍💻 Autor
 
-**Eduardo Vázquez**
+**Eduardo Vargas**
 
 - 🐙 GitHub: [@Eduardo-VaZu](https://github.com/Eduardo-VaZu)
-- 💼 LinkedIn: [Eduardo Vázquez](https://linkedin.com/in/eduardo-vazu)
+- 💼 LinkedIn: [Eduardo Vargas](https://linkedin.com/in/eduardo-vazu)
 
 ---
 
