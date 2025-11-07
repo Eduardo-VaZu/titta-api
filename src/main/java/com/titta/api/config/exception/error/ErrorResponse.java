@@ -1,4 +1,4 @@
-package com.titta.api.exception.error;
+package com.titta.api.config.exception.error;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

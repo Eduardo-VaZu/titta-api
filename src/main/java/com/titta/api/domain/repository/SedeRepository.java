@@ -1,6 +1,6 @@
-package com.titta.api.repository;
+package com.titta.api.domain.repository;
 
-import com.titta.api.model.Sede;
+import com.titta.api.domain.model.Sede;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SedeRepository extends JpaRepository<Sede, Long> {

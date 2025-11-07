@@ -1,7 +1,7 @@
-package com.titta.api.repository;
+package com.titta.api.domain.repository;
 
-import com.titta.api.model.Rol;
-import com.titta.api.model.enums.RolEnum;
+import com.titta.api.domain.model.Rol;
+import com.titta.api.domain.model.enums.RolEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

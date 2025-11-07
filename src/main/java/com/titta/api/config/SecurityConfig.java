@@ -1,8 +1,8 @@
 package com.titta.api.config;
 
 import com.titta.api.config.filter.JwtTokenValidator;
-import com.titta.api.service.auth.UserDetailServiceImpl;
-import com.titta.api.util.JwtUtils;
+import com.titta.api.features.auth.service.impl.UserDetailServiceImpl;
+import com.titta.api.config.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

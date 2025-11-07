@@ -1,4 +1,4 @@
-package com.titta.api.model;
+package com.titta.api.domain.model;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,4 +1,4 @@
-package com.titta.api.model;
+package com.titta.api.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

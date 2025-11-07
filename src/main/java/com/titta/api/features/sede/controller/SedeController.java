@@ -1,8 +1,9 @@
-package com.titta.api.features.sede;
+package com.titta.api.features.sede.controller;
 
-import com.titta.api.features.sede.dto.SedeRequestDto;
-import com.titta.api.features.sede.dto.SedeResponseDto;
+import com.titta.api.features.sede.dto.request.SedeRequestDto;
+import com.titta.api.features.sede.dto.response.SedeResponseDto;
 import com.titta.api.config.exception.error.ErrorResponse;
+import com.titta.api.features.sede.service.SedeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

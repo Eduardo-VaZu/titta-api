@@ -1,4 +1,4 @@
-package com.titta.api.features.category.dto;
+package com.titta.api.features.category.dto.response;
 
 import lombok.Builder;
 

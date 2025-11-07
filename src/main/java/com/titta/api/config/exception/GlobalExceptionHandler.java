@@ -1,7 +1,7 @@
-package com.titta.api.exception;
+package com.titta.api.config.exception;
 
 
-import com.titta.api.exception.error.ErrorResponse;
+import com.titta.api.config.exception.error.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

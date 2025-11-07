@@ -1,10 +1,11 @@
 // Ubicación: com/titta/api/controller/AuthenticationController.java
 
-package com.titta.api.features.auth;
+package com.titta.api.features.auth.controller;
 
-import com.titta.api.features.auth.dto.AuthLoginRequest;
-import com.titta.api.features.auth.dto.AuthRegisterRequest;
-import com.titta.api.features.auth.dto.AuthResponse;
+import com.titta.api.features.auth.service.impl.UserDetailServiceImpl;
+import com.titta.api.features.auth.dto.request.AuthLoginRequest;
+import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
+import com.titta.api.features.auth.dto.response.AuthResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

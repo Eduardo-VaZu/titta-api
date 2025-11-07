@@ -1,8 +1,8 @@
-package com.titta.api.features.product;
+package com.titta.api.features.product.mapper;
 
 import com.titta.api.domain.model.*;
-import com.titta.api.features.product.dto.ProductoRequestDto;
-import com.titta.api.features.product.dto.ProductoResponseDto;
+import com.titta.api.features.product.dto.request.ProductoRequestDto;
+import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

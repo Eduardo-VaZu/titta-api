@@ -1,8 +1,9 @@
-package com.titta.api.features.category;
+package com.titta.api.features.category.controller;
 
-import com.titta.api.features.category.dto.CategoriaRequestDto;
-import com.titta.api.features.category.dto.CategoriaResponseDto;
+import com.titta.api.features.category.dto.request.CategoriaRequestDto;
+import com.titta.api.features.category.dto.response.CategoriaResponseDto;
 import com.titta.api.config.exception.error.ErrorResponse;
+import com.titta.api.features.category.service.CategoriaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

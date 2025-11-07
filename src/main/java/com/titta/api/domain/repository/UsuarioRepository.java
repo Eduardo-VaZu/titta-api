@@ -1,6 +1,6 @@
-package com.titta.api.repository;
+package com.titta.api.domain.repository;
 
-import com.titta.api.model.Usuario;
+import com.titta.api.domain.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

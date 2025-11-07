@@ -1,7 +1,7 @@
-package com.titta.api.model;
+package com.titta.api.domain.model;
 
 
-import com.titta.api.model.enums.RolEnum;
+import com.titta.api.domain.model.enums.RolEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

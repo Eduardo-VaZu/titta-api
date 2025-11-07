@@ -1,4 +1,4 @@
-package com.titta.api.features.sede.dto;
+package com.titta.api.features.sede.dto.request;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

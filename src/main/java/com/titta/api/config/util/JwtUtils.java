@@ -1,4 +1,4 @@
-package com.titta.api.util;
+package com.titta.api.config.util;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;

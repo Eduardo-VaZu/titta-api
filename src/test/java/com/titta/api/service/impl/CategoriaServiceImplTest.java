@@ -1,11 +1,12 @@
 package com.titta.api.service.impl;
 
-import com.titta.api.dto.request.CategoriaRequestDto;
-import com.titta.api.dto.response.CategoriaResponseDto;
-import com.titta.api.exception.DuplicateResourceException;
-import com.titta.api.mapper.CategoriaMapper;
-import com.titta.api.model.Categoria;
-import com.titta.api.repository.CategoriaRepository;
+import com.titta.api.features.category.dto.request.CategoriaRequestDto;
+import com.titta.api.features.category.dto.response.CategoriaResponseDto;
+import com.titta.api.config.exception.DuplicateResourceException;
+import com.titta.api.features.category.service.impl.CategoriaServiceImpl;
+import com.titta.api.features.category.mapper.CategoriaMapper;
+import com.titta.api.domain.model.Categoria;
+import com.titta.api.domain.repository.CategoriaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

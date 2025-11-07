@@ -1,4 +1,4 @@
-package com.titta.api.model.enums;
+package com.titta.api.domain.model.enums;
 
 public enum RolEnum {
     ADMINISTRADOR, CLIENTE, EMPLEADO;

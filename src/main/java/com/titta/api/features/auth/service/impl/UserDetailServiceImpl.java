@@ -1,10 +1,10 @@
 // Ubicación: com/titta/api/service/auth/UserDetailServiceImpl.java
 
-package com.titta.api.features.auth;
+package com.titta.api.features.auth.service.impl;
 
-import com.titta.api.features.auth.dto.AuthLoginRequest;
-import com.titta.api.features.auth.dto.AuthRegisterRequest;
-import com.titta.api.features.auth.dto.AuthResponse;
+import com.titta.api.features.auth.dto.request.AuthLoginRequest;
+import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
+import com.titta.api.features.auth.dto.response.AuthResponse;
 import com.titta.api.config.exception.DuplicateResourceException;
 import com.titta.api.domain.model.CredencialTradicional;
 import com.titta.api.domain.model.Rol;

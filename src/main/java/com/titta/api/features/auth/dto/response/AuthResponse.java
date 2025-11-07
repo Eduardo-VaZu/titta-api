@@ -1,4 +1,4 @@
-package com.titta.api.features.auth.dto;
+package com.titta.api.features.auth.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 

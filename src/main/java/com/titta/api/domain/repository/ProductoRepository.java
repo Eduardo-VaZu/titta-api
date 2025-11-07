@@ -1,6 +1,6 @@
-package com.titta.api.repository;
+package com.titta.api.domain.repository;
 
-import com.titta.api.model.Producto;
+import com.titta.api.domain.model.Producto;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long> {

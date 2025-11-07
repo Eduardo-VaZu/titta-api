@@ -1,4 +1,4 @@
-package com.titta.api.features.sede.dto;
+package com.titta.api.features.sede.dto.response;
 
 import java.time.LocalTime;
 import java.util.List;

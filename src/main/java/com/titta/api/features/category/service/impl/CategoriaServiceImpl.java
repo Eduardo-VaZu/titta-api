@@ -1,10 +1,12 @@
-package com.titta.api.features.category;
+package com.titta.api.features.category.service.impl;
 
-import com.titta.api.features.category.dto.CategoriaRequestDto;
-import com.titta.api.features.category.dto.CategoriaResponseDto;
+import com.titta.api.features.category.mapper.CategoriaMapper;
+import com.titta.api.features.category.dto.request.CategoriaRequestDto;
+import com.titta.api.features.category.dto.response.CategoriaResponseDto;
 import com.titta.api.config.exception.DuplicateResourceException;
 import com.titta.api.domain.model.Categoria;
 import com.titta.api.domain.repository.CategoriaRepository;
+import com.titta.api.features.category.service.CategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

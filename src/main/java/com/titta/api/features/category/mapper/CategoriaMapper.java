@@ -1,7 +1,7 @@
-package com.titta.api.features.category;
+package com.titta.api.features.category.mapper;
 
-import com.titta.api.features.category.dto.CategoriaRequestDto;
-import com.titta.api.features.category.dto.CategoriaResponseDto;
+import com.titta.api.features.category.dto.request.CategoriaRequestDto;
+import com.titta.api.features.category.dto.response.CategoriaResponseDto;
 import com.titta.api.domain.model.Categoria;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,7 @@
-package com.titta.api.features.sede;
+package com.titta.api.features.sede.service;
 
-import com.titta.api.features.sede.dto.SedeRequestDto;
-import com.titta.api.features.sede.dto.SedeResponseDto;
+import com.titta.api.features.sede.dto.request.SedeRequestDto;
+import com.titta.api.features.sede.dto.response.SedeResponseDto;
 
 import java.util.List;
 

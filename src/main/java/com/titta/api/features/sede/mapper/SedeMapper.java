@@ -1,7 +1,7 @@
-package com.titta.api.features.sede;
+package com.titta.api.features.sede.mapper;
 
-import com.titta.api.features.sede.dto.SedeRequestDto;
-import com.titta.api.features.sede.dto.SedeResponseDto;
+import com.titta.api.features.sede.dto.request.SedeRequestDto;
+import com.titta.api.features.sede.dto.response.SedeResponseDto;
 import com.titta.api.domain.model.Direccion;
 import com.titta.api.domain.model.HorarioOperacionSede;
 import com.titta.api.domain.model.Sede;

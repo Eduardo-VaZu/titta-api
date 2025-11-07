@@ -1,11 +1,13 @@
-package com.titta.api.features.product;
+package com.titta.api.features.product.service.impl;
 
-import com.titta.api.features.product.dto.ProductoRequestDto;
-import com.titta.api.features.product.dto.ProductoResponseDto;
+import com.titta.api.features.product.mapper.ProductoMapper;
+import com.titta.api.features.product.dto.request.ProductoRequestDto;
+import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import com.titta.api.config.exception.DuplicateResourceException;
 import com.titta.api.config.exception.ResourceNotFoundException;
 import com.titta.api.domain.model.Producto;
 import com.titta.api.domain.repository.ProductoRepository;
+import com.titta.api.features.product.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,4 +1,4 @@
-package com.titta.api.features.product.dto;
+package com.titta.api.features.product.dto.response;
 
 import java.math.BigDecimal;
 import java.util.List;
