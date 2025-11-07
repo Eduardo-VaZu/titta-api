@@ -83,6 +83,7 @@ mysql --version  # Debe mostrar MySQL 8.0+
    DB_NAME=db_titta
    DB_USERNAME=root
    DB_PASSWORD=tu_contraseña_segura
+   # Nota: DB_DRIVER tiene valor por defecto (com.mysql.cj.jdbc.Driver)
    DB_DRIVER=com.mysql.cj.jdbc.Driver
    
    # Configuración de JWT
@@ -94,7 +95,7 @@ mysql --version  # Debe mostrar MySQL 8.0+
 
 3. **Crear la base de datos:**
    ```sql
-   CREATE DATABASE titta_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE DATABASE db_titta CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
 4. **Instalar dependencias:**
@@ -154,13 +155,25 @@ Una vez ejecutada la aplicación, puedes acceder a la documentación interactiva
 
 | Método | Endpoint | Descripción | Autenticación |
 |--------|----------|-------------|--------------|
-| POST | `/register` | Registrar nuevo usuario | No |
-| POST | `/login` | Iniciar sesión y obtener JWT | No |
+| POST | `/sign-up` | Registrar nuevo usuario | No |
+| POST | `/log-in` | Iniciar sesión y obtener JWT | No |
 
 **Ejemplo de Login:**
 ```json
-POST /api/v1/auth/login
+POST /api/v1/auth/log-in
 {
+  "username": "usuario@example.com",
+  "password": "contraseña123"
+}
+```
+
+**Ejemplo de Registro:**
+```json
+POST /api/v1/auth/sign-up
+{
+  "nombre": "Juan",
+  "apellidoPaterno": "Pérez",
+  "apellidoMaterno": "García",
   "email": "usuario@example.com",
   "password": "contraseña123"
 }
@@ -170,11 +183,8 @@ POST /api/v1/auth/login
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "usuario": {
-    "id": 1,
-    "email": "usuario@example.com",
-    "rol": "CLIENTE"
-  }
+  "message": "Usuario registrado exitosamente",
+  "username": "usuario@example.com"
 }
 ```
 
@@ -228,15 +238,17 @@ src/main/java/com/titta/api/
 │       └── JwtTokenValidator.java      # Filtro de validación JWT
 │
 ├── 🎮 controller/                       # Controladores REST
-│   ├── AuthenticationController.java   # Endpoints de autenticación
 │   ├── ProductoController.java         # CRUD de productos
 │   ├── CategoriaController.java        # CRUD de categorías
 │   └── SedeController.java             # CRUD de sedes
 │
-├── 📦 dto/                              # Data Transfer Objects
-│   ├── auth/                           # DTOs de autenticación
-│   ├── request/                        # DTOs de request
-│   └── response/                       # DTOs de response
+├── 📦 features/                         # Módulos por funcionalidad
+│   └── auth/                           # Módulo de autenticación
+│       ├── controller/                 # AuthenticationController
+│       ├── dto/
+│       │   ├── request/                # AuthLoginRequest, AuthRegisterRequest
+│       │   └── response/               # AuthResponse
+│       └── service/                    # UserDetailServiceImpl
 │
 ├── ⚠️ exception/                        # Manejo de excepciones
 │   ├── GlobalExceptionHandler.java     # Handler global
@@ -250,7 +262,7 @@ src/main/java/com/titta/api/
 │
 ├── 📊 model/                            # Entidades JPA
 │   ├── Usuario.java                    # Usuarios del sistema
-│   ├── Rol.java                        # Roles (ADMIN, VENDEDOR, CLIENTE)
+│   ├── Rol.java                        # Roles (ADMINISTRADOR, EMPLEADO, CLIENTE)
 │   ├── Producto.java                   # Productos
 │   ├── Categoria.java                  # Categorías de productos
 │   ├── Sede.java                       # Sedes/sucursales
@@ -278,9 +290,8 @@ src/main/java/com/titta/api/
 src/main/resources/
 ├── application.properties              # Configuración de la app
 ├── db/migration/                       # Migraciones Flyway
-│   ├── V1__initial_schema.sql
-│   ├── V2__add_roles.sql
-│   └── V3__add_constraints.sql
+│   ├── V1__Crear_esema_inicial.sql    # Esquema completo + roles
+│   └── V2__Modificar_tabla_rol_imagen.sql  # Ajustes adicionales
 └── static/                             # Recursos estáticos
 ```
 
@@ -292,15 +303,14 @@ El proyecto utiliza **Flyway** para gestionar el versionado del esquema de base 
 
 ```
 src/main/resources/db/migration/
-├── V1__initial_schema.sql      # Esquema inicial (tablas base)
-├── V2__add_roles.sql           # Inserción de roles
-└── V3__add_constraints.sql     # Constraints adicionales
+├── V1__Crear_esema_inicial.sql             # Esquema completo + roles iniciales
+└── V2__Modificar_tabla_rol_imagen.sql      # Modificaciones posteriores
 ```
 
 ### Convención de Nombres
 
 - Formato: `V{VERSION}__{DESCRIPTION}.sql`
-- Ejemplo: `V4__add_payment_methods.sql`
+- Ejemplo: `V3__Agregar_metodos_pago_adicionales.sql`
 
 ### Comandos Útiles
 
@@ -347,12 +357,12 @@ src/test/java/com/titta/api/
 | Rol | Descripción | Permisos |
 |-----|-------------|----------|
 | 👑 **ADMINISTRADOR** | Control total del sistema | CRUD completo en todas las entidades, gestión de usuarios, configuración del sistema |
-| 💼 **VENDEDOR** | Personal de punto de venta | Gestión de ventas, consulta de inventario, actualización de stock, gestión de carritos |
+| 💼 **EMPLEADO** | Personal de punto de venta | Gestión de ventas, consulta de inventario, actualización de stock, gestión de carritos |
 | 🛒 **CLIENTE** | Usuario final | Navegación de productos, creación de carritos, realización de compras, consulta de órdenes |
 
 ### Matriz de Permisos
 
-| Recurso | ADMINISTRADOR | VENDEDOR | CLIENTE |
+| Recurso | ADMINISTRADOR | EMPLEADO | CLIENTE |
 |---------|---------------|----------|---------|
 | Productos | CRUD | Read | Read |
 | Categorías | CRUD | Read | Read |
