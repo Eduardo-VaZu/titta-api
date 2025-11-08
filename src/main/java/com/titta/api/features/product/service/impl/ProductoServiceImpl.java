@@ -1,7 +1,9 @@
 package com.titta.api.features.product.service.impl;
 
 import com.titta.api.domain.model.Categoria;
+import com.titta.api.domain.model.Sede;
 import com.titta.api.domain.repository.CategoriaRepository;
+import com.titta.api.domain.repository.SedeRepository;
 import com.titta.api.features.product.dto.request.ProductoUpdateDetailsRequestDto;
 import com.titta.api.features.product.mapper.ProductoMapper;
 import com.titta.api.features.product.dto.request.ProductoRequestDto;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +33,9 @@ public class ProductoServiceImpl implements ProductoService {
     @Autowired
     private ProductoMapper productoMapper;
 
+    @Autowired
+    private SedeRepository sedeRepository;
+
     @Override
     @Transactional
     public ProductoResponseDto crearProducto(ProductoRequestDto productoDto) {
@@ -37,7 +43,21 @@ public class ProductoServiceImpl implements ProductoService {
             throw new DuplicateResourceException("Ya existe un producto con el SKU '" + productoDto.sku() + "'.");
         }
 
-        Producto producto = productoMapper.toProducto(productoDto);
+        Categoria categoria = categoriaRepository.findById(productoDto.idCategoria())
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con el ID: " + productoDto.idCategoria()));
+
+        Set<Long> sedeIds = productoDto.stockSede().stream()
+                .map(ProductoRequestDto.StockSedeRequestDto::idSede)
+                .collect(Collectors.toSet());
+
+        List<Sede> sedes = sedeRepository.findAllById(sedeIds);
+
+        if (sedes.size() != sedeIds.size()) {
+            throw new ResourceNotFoundException("Una o más Sedes no fueron encontradas. Verifique los IDs.");
+        }
+
+        Producto producto = productoMapper.toProducto(productoDto, categoria, sedes);
+
         Producto nuevoProducto = productoRepository.save(producto);
         return productoMapper.toResponseDto(nuevoProducto);
     }
