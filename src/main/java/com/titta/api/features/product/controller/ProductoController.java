@@ -1,6 +1,7 @@
 package com.titta.api.features.product.controller;
 
 import com.titta.api.features.product.dto.request.ProductoRequestDto;
+import com.titta.api.features.product.dto.request.ProductoUpdateDetailsRequestDto;
 import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import com.titta.api.config.exception.error.ErrorResponse;
 import com.titta.api.features.product.service.ProductoService;
@@ -68,5 +69,35 @@ public class ProductoController {
     public ResponseEntity<ProductoResponseDto> obtenerProductoPorId(@PathVariable Long id) {
         ProductoResponseDto producto = productoService.obtenerProductoPorId(id);
         return new ResponseEntity<>(producto, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Actualizar detalles de un producto (Admin)",
+            description = "Permite al ADMIN actualizar campos clave del producto como precio, nombre, SKU y categoría.")
+    @PutMapping("/{idProducto}/details")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<ProductoResponseDto> actualizarDetallesProducto(
+            @PathVariable Long idProducto,
+            @Valid @RequestBody ProductoUpdateDetailsRequestDto detailsDto) {
+
+        ProductoResponseDto productoActualizado = productoService.actualizarDetalles(idProducto, detailsDto);
+        return ResponseEntity.ok(productoActualizado);
+    }
+
+    @Operation(summary = "Desactivar un producto (Admin)",
+            description = "Desactiva un producto para que no aparezca en la tienda, sin borrarlo.")
+    @PostMapping("/{idProducto}/deactivate")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<Void> desactivarProducto(@PathVariable Long idProducto) {
+        productoService.cambiarEstado(idProducto, false);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Activar un producto (Admin)",
+            description = "Reactiva un producto para que vuelva a aparecer en la tienda.")
+    @PostMapping("/{idProducto}/activate")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<Void> activarProducto(@PathVariable Long idProducto) {
+        productoService.cambiarEstado(idProducto, true);
+        return ResponseEntity.ok().build();
     }
 }
