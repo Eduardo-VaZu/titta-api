@@ -43,11 +43,9 @@ public class Producto {
 
     @OneToOne(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
     private ImagenProducto imagen;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
     private Set<StockSede> stocks = new HashSet<>();
 }

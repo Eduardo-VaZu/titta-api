@@ -3,7 +3,6 @@ package com.titta.api.features.inventory.controller;
 import com.titta.api.features.inventory.dto.request.UpdateStockRequestDto;
 import com.titta.api.features.inventory.dto.response.StockSedeResponseDto;
 import com.titta.api.features.inventory.service.InventarioService;
-import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

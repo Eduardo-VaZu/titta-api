@@ -24,6 +24,5 @@ public class Categoria {
 
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
     private List<Producto> productos;
 }

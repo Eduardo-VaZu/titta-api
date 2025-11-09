@@ -35,17 +35,14 @@ public class Sede {
 
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "sede", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private Set<HorarioOperacionSede> horariosOperacion = new HashSet<>();
 
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "sede", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private Set<StockSede> stocks = new HashSet<>();
 
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "sede", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private Set<UsuarioSede> usuariosSedes = new HashSet<>();
 
 }
