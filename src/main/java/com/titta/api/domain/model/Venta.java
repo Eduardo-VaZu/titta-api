@@ -1,5 +1,6 @@
 package com.titta.api.domain.model;
 
+import com.titta.api.domain.model.base.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Venta {
+public class Venta extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_venta")

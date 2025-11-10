@@ -9,6 +9,5 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    // Este método buscará un usuario por su email. Spring Data JPA lo implementará automáticamente.
     Optional<Usuario> findByEmail(String email);
 }

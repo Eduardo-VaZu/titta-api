@@ -1,56 +1,53 @@
 package com.titta.api.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.titta.api.domain.model.base.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tbl_usuario")
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class Usuario {
+public class Usuario extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Long idUsuario;
 
-    @Column(name = "nombre", nullable = false, length = 100)
+    @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
 
-    @Column(name = "apellido_paterno", nullable = false, length = 100)
+    @Column(name = "apellido_paterno", nullable = false, length = 50)
     private String apellidoPaterno;
 
-    @Column(name = "apellido_materno", nullable = false, length = 100)
+    @Column(name = "apellido_materno", length = 50)
     private String apellidoMaterno;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @CreationTimestamp
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
-    private Date fechaRegistro;
+//    @CreationTimestamp
+//    @Column(name = "fecha_registro", nullable = false)
+//    private LocalDate fechaRegistro;
 
-    @Column(name = "estado_usuario", nullable = false, length = 5)
+    @Column(name = "estado_usuario", nullable = false)
     private boolean estadoUsuario;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_rol", nullable = false)
-    @EqualsAndHashCode.Exclude
     private Rol rol;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
-    private Set<UsuarioSede> usuarioSedes = new HashSet<>();
+    private List<UsuarioSede> usuarioSedes = new ArrayList<>();
 
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
     private CredencialTradicional credencialTradicional;
 }

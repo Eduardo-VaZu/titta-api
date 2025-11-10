@@ -1,9 +1,9 @@
 package com.titta.api.domain.model;
 
+import com.titta.api.domain.model.base.Auditable;
 import jakarta.persistence.*;
-        import lombok.*;
+import lombok.*;
 
-        import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Carrito {
+public class Carrito extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,11 +25,11 @@ public class Carrito {
     @EqualsAndHashCode.Exclude
     private Usuario usuario;
 
-    @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
+//    @Column(name = "fecha_creacion", nullable = false)
+//    private LocalDateTime fechaCreacion;
 
-    @Column(name = "fecha_actualizacion", nullable = false)
-    private LocalDateTime fechaActualizacion;
+//    @Column(name = "fecha_actualizacion", nullable = false)
+//    private LocalDateTime fechaActualizacion;
 
     @Column(name = "estado", nullable = false, length = 50)
     private String estado;

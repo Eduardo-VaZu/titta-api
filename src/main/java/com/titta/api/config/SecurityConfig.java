@@ -36,28 +36,20 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    // --- REGLAS DE AUTENTICACIÓN ---
+
                     auth.requestMatchers("/api/v1/auth/**").permitAll();
 
-                    // --- REGLAS DE DOCUMENTACIÓN (NUEVAS) ---
                     auth.requestMatchers("/v3/api-docs/**").permitAll();
                     auth.requestMatchers("/swagger-ui.html").permitAll();
                     auth.requestMatchers("/swagger-ui/**").permitAll();
 
-                    // --- REGLAS DE "LECTURA" PÚBLICAS (GET) ---
-                    // Permitimos ver productos, categorías y sedes
                     auth.requestMatchers(HttpMethod.GET, "/api/v1/productos/**").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/v1/categorias/**").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/v1/sedes/**").permitAll();
 
-                    // --- REGLAS DE "ESCRITURA" ESPECÍFICAS (¡Las nuevas!) ---
-                    // Estas reglas van PRIMERO que las genéricas
-
-                    // Solo VENDEDOR o ADMIN pueden ajustar stock
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/productos/{idProducto}/stock/sede/{idSede}/adjust")
+                    auth.requestMatchers(HttpMethod.POST, "/api/v1/inventario/productos/{idProducto}/stock/sede/{idSede}")
                             .hasAnyRole("ADMINISTRADOR", "VENDEDOR");
 
-                    // Solo ADMIN puede cambiar detalles, activar o desactivar
                     auth.requestMatchers(HttpMethod.PUT, "/api/v1/productos/{idProducto}/details")
                             .hasRole("ADMINISTRADOR");
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/productos/{idProducto}/activate")
@@ -65,14 +57,10 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/productos/{idProducto}/deactivate")
                             .hasRole("ADMINISTRADOR");
 
-                    // Reglas de creación generales para ADMIN
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/productos").hasRole("ADMINISTRADOR");
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/sedes").hasRole("ADMINISTRADOR");
-                    // (Categorias POST es público en tu código original, lo mantengo)
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/categorias").permitAll();
+                    auth.requestMatchers(HttpMethod.POST, "/api/v1/categorias").hasRole("ADMINISTRADOR");
 
-                    // --- REGLA FINAL ---
-                    // Cualquier otra petición que no coincida, debe estar autenticada
                     auth.anyRequest().authenticated();
                 })
                 .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
@@ -94,6 +82,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 }

@@ -2,17 +2,17 @@
 
 package com.titta.api.features.auth.service.impl;
 
-import com.titta.api.features.auth.dto.request.AuthLoginRequest;
-import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
-import com.titta.api.features.auth.dto.response.AuthResponse;
 import com.titta.api.config.exception.DuplicateResourceException;
+import com.titta.api.config.util.JwtUtils;
 import com.titta.api.domain.model.CredencialTradicional;
 import com.titta.api.domain.model.Rol;
 import com.titta.api.domain.model.Usuario;
 import com.titta.api.domain.model.enums.RolEnum;
 import com.titta.api.domain.repository.RolRepository;
 import com.titta.api.domain.repository.UsuarioRepository;
-import com.titta.api.config.util.JwtUtils;
+import com.titta.api.features.auth.dto.request.AuthLoginRequest;
+import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
+import com.titta.api.features.auth.dto.response.AuthResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -44,25 +44,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
     @Autowired
     private RolRepository rolRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe."));
-
-        List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
-        authorityList.add(new SimpleGrantedAuthority("ROLE_".concat(usuario.getRol().getNombreRol().name())));
-
-        return new User(
-                usuario.getEmail(),
-                usuario.getCredencialTradicional().getPasswordHash(),
-                usuario.isEstadoUsuario(),
-                true,
-                true,
-                true,
-                authorityList
-        );
-    }
-
     public AuthResponse registerUser(AuthRegisterRequest registerRequest) {
         if (usuarioRepository.findByEmail(registerRequest.email()).isPresent()) {
             throw new DuplicateResourceException("El correo electrónico ya está registrado.");
@@ -89,12 +70,12 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
         Usuario usuarioCreado = usuarioRepository.save(usuario);
 
-        AuthResponse.UsuarioResponseDto  usuarioDto = new AuthResponse.UsuarioResponseDto(
-                usuario.getIdUsuario(),
-                usuario.getNombre(),
-                usuario.getEmail(),
-                usuario.getRol().getNombreRol().name(),
-                usuario.isEstadoUsuario()
+        AuthResponse.UsuarioResponseDto usuarioDto = new AuthResponse.UsuarioResponseDto(
+                usuarioCreado.getIdUsuario(),
+                usuarioCreado.getNombre(),
+                usuarioCreado.getEmail(),
+                usuarioCreado.getRol().getNombreRol().name(),
+                usuarioCreado.isEstadoUsuario()
         );
 
         return new AuthResponse(usuarioDto, null, "Usuario logueado exitosamente", true);
@@ -113,7 +94,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
         Usuario usuario = usuarioRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe."));
 
-        AuthResponse.UsuarioResponseDto  usuarioDto = new AuthResponse.UsuarioResponseDto(
+        AuthResponse.UsuarioResponseDto usuarioDto = new AuthResponse.UsuarioResponseDto(
                 usuario.getIdUsuario(),
                 usuario.getNombre(),
                 usuario.getEmail(),
@@ -136,5 +117,25 @@ public class UserDetailServiceImpl implements UserDetailsService {
         }
 
         return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(), userDetails.getAuthorities());
+    }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Usuario usuario = usuarioRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe."));
+
+        List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
+        authorityList.add(new SimpleGrantedAuthority("ROLE_".concat(usuario.getRol().getNombreRol().name())));
+
+        return new User(
+                usuario.getEmail(),
+                usuario.getCredencialTradicional().getPasswordHash(),
+                usuario.isEstadoUsuario(),
+                true,
+                true,
+                true,
+                authorityList
+        );
     }
 }

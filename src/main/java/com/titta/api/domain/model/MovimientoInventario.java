@@ -1,5 +1,6 @@
 package com.titta.api.domain.model;
 
+import com.titta.api.domain.model.enums.TipoMovimientoInventario;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,8 +29,9 @@ public class MovimientoInventario {
     @EqualsAndHashCode.Exclude
     private Sede sede;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_movimiento", nullable = false, length = 20)
-    private String tipoMovimiento;
+    private TipoMovimientoInventario tipoMovimiento;
 
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;

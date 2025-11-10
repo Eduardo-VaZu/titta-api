@@ -19,10 +19,10 @@ public class InventarioController {
     @Autowired
     private InventarioService inventarioService;
 
-    @Operation(summary = "Ajustar stock de un producto en una sede (Vendedor/Admin)",
+    @Operation(summary = "Ajustar stock de un producto en una sede (Empleado/Admin)",
             description = "Suma o resta stock de un producto en una sede específica. Registra un movimiento de inventario.")
     @PostMapping("/producto/{idProducto}/sede/{idSede}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'VENDEDOR')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'EMPLEADO')")
     public ResponseEntity<StockSedeResponseDto> ajustarStock(
             @PathVariable Long idProducto,
             @PathVariable Long idSede,

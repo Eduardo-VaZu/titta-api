@@ -1,6 +1,6 @@
 package com.titta.api.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.titta.api.domain.model.base.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Producto {
+public class Producto extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

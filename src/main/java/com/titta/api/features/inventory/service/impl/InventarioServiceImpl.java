@@ -1,11 +1,8 @@
 package com.titta.api.features.inventory.service.impl;
 
 import com.titta.api.config.exception.ResourceNotFoundException;
-import com.titta.api.domain.model.MovimientoInventario;
-import com.titta.api.domain.model.Producto;
-import com.titta.api.domain.model.Sede;
-import com.titta.api.domain.model.StockSede;
-import com.titta.api.domain.model.StockSedeId;
+import com.titta.api.domain.model.*;
+import com.titta.api.domain.model.enums.TipoMovimientoInventario;
 import com.titta.api.domain.repository.MovimientoInventarioRepository;
 import com.titta.api.domain.repository.ProductoRepository;
 import com.titta.api.domain.repository.SedeRepository;
@@ -59,7 +56,7 @@ public class InventarioServiceImpl implements InventarioService {
         MovimientoInventario movimiento = MovimientoInventario.builder()
                 .producto(producto)
                 .sede(sede)
-                .tipoMovimiento("AJUSTE_MANUAL")
+                .tipoMovimiento(TipoMovimientoInventario.AJUSTE_MANUAL)
                 .cantidad(cantidad)
                 .fechaMovimiento(LocalDate.now())
                 .razon(razon)
