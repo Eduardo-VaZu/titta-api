@@ -29,16 +29,13 @@ public class CategoriaController {
 
     @Operation(summary = "Crear una nueva categoría", description = "Crea una nueva categoría de producto en el sistema.")
     @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201", description = "Categoría creada exitosamente",
+            @ApiResponse(responseCode = "201", description = "Categoría creada exitosamente",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = CategoriaResponseDto.class))),
-            @ApiResponse(
-                    responseCode = "400", description = "Datos de entrada inválidos",
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(
-                    responseCode = "409", description = "Conflicto, la categoría ya existe",
+            @ApiResponse(responseCode = "409", description = "Conflicto, la categoría ya existe",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponse.class)))
     })

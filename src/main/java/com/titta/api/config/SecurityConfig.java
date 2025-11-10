@@ -1,8 +1,8 @@
 package com.titta.api.config;
 
 import com.titta.api.config.filter.JwtTokenValidator;
-import com.titta.api.features.auth.service.impl.UserDetailServiceImpl;
 import com.titta.api.config.util.JwtUtils;
+import com.titta.api.features.auth.service.impl.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +38,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     // --- REGLAS DE AUTENTICACIÓN ---
                     auth.requestMatchers("/api/v1/auth/**").permitAll();
+
+                    // --- REGLAS DE DOCUMENTACIÓN (NUEVAS) ---
+                    auth.requestMatchers("/v3/api-docs/**").permitAll();
+                    auth.requestMatchers("/swagger-ui.html").permitAll();
+                    auth.requestMatchers("/swagger-ui/**").permitAll();
 
                     // --- REGLAS DE "LECTURA" PÚBLICAS (GET) ---
                     // Permitimos ver productos, categorías y sedes
