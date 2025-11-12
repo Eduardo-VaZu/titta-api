@@ -34,3 +34,12 @@ build/
 
 ### Environment Variables ###
 .env
+
+### Logs ###
+logs/
+*.log
+
+### Application Properties (sensitive) ###
+application-*.properties
+!application-dev.properties.example
+!application-prod.properties.example

@@ -60,7 +60,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                     return;
                 }
 
-                DecodedJWT decodedJWT = jwtUtils.validateToken(jwtToken);
+                DecodedJWT decodedJWT = jwtUtils.validateAccessToken(jwtToken);
 
                 if (jwtUtils.isTokenExpired(decodedJWT)) {
                     log.warn("El token JWT ha caducado para el usuario: {}", jwtUtils.extractUserName(decodedJWT));
