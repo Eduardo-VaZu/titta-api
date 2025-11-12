@@ -1,5 +1,7 @@
 package com.titta.api.features.product.dto.response;
 
+import com.titta.api.features.inventory.dto.response.StockSedeResponseDto;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -19,11 +21,7 @@ public record ProductoResponseDto(
             Long idImagen,
             String imagenUrl,
             String altText
-    ) {}
+    ) {
+    }
 
-    public record StockSedeResponseDto(
-            Long idProducto,
-            Long idSede,
-            int stock
-    ) {}
 }

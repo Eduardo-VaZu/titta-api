@@ -42,7 +42,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.GET, "/api/v1/sedes/**").permitAll();
 
                     auth.requestMatchers(HttpMethod.POST, "/api/v1/inventario/productos/{idProducto}/stock/sede/{idSede}")
-                            .hasAnyRole("ADMINISTRADOR", "VENDEDOR");
+                            .hasAnyRole("ADMINISTRADOR", "EMPLEADO");
 
                     auth.requestMatchers(HttpMethod.PUT, "/api/v1/productos/{idProducto}/details")
                             .hasRole("ADMINISTRADOR");

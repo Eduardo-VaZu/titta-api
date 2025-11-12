@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class InventarioServiceImpl implements InventarioService {
@@ -65,5 +67,20 @@ public class InventarioServiceImpl implements InventarioService {
         movimientoInventarioRepository.save(movimiento);
 
         return inventarioMapper.toStockSedeResponseDto(stockActualizado);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StockSedeResponseDto> listarSedeId(Long idSede) {
+
+        if (!sedeRepository.existsById(idSede)) {
+            throw new ResourceNotFoundException("Sede no encontrada con ID: " + idSede);
+        }
+
+        List<StockSede> stocks = stockSedeRepository.findAllById_IdSede(idSede);
+
+        return stocks.stream()
+                .map(inventarioMapper::toStockSedeResponseDto)
+                .collect(Collectors.toList());
     }
 }

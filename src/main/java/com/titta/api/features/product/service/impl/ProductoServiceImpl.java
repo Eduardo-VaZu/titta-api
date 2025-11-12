@@ -2,10 +2,10 @@ package com.titta.api.features.product.service.impl;
 
 import com.titta.api.config.exception.DuplicateResourceException;
 import com.titta.api.config.exception.ResourceNotFoundException;
-import com.titta.api.domain.model.Categoria;
-import com.titta.api.domain.model.Producto;
-import com.titta.api.domain.model.Sede;
+import com.titta.api.domain.model.*;
+import com.titta.api.domain.model.enums.TipoMovimientoInventario;
 import com.titta.api.domain.repository.CategoriaRepository;
+import com.titta.api.domain.repository.MovimientoInventarioRepository;
 import com.titta.api.domain.repository.ProductoRepository;
 import com.titta.api.domain.repository.SedeRepository;
 import com.titta.api.features.product.dto.request.ProductoBatchRequestDto;
@@ -15,9 +15,13 @@ import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import com.titta.api.features.product.mapper.ProductoMapper;
 import com.titta.api.features.product.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +39,8 @@ public class ProductoServiceImpl implements ProductoService {
     private SedeRepository sedeRepository;
     @Autowired
     private ProductoMapper productoMapper;
+    @Autowired
+    private MovimientoInventarioRepository movimientoInventarioRepository;
 
     @Override
     @Transactional
@@ -51,7 +57,6 @@ public class ProductoServiceImpl implements ProductoService {
                 .map(ProductoRequestDto.StockSedeRequestDto::idSede)
                 .distinct()
                 .collect(Collectors.toList());
-
         List<Sede> sedesEncontradas = sedeRepository.findAllById(sedeIds);
 
         if (sedesEncontradas.size() != sedeIds.size()) {
@@ -65,6 +70,20 @@ public class ProductoServiceImpl implements ProductoService {
         Producto producto = productoMapper.toProducto(requestDto, categoria, sedesEncontradas);
 
         Producto productoGuardado = productoRepository.save(producto);
+
+        List<MovimientoInventario> movimientos = new ArrayList<>();
+        for (StockSede stock : productoGuardado.getStocks()) {
+            MovimientoInventario movimiento = MovimientoInventario.builder()
+                    .producto(productoGuardado)
+                    .sede(stock.getSede())
+                    .tipoMovimiento(TipoMovimientoInventario.INGRESO_COMPRA)
+                    .cantidad(stock.getCantidad())
+                    .fechaMovimiento(LocalDate.now())
+                    .razon("Stock inicial al crear producto")
+                    .build();
+            movimientos.add(movimiento);
+        }
+        movimientoInventarioRepository.saveAll(movimientos);
 
         return productoMapper.toProductoResponseDto(productoGuardado);
     }
@@ -80,18 +99,12 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductoResponseDto> getAllProductos(Boolean soloActivos) {
-        List<Producto> productos;
+    public Page<ProductoResponseDto> getAllProductos(Boolean soloActivos, Pageable pageable) {
+        Page<Producto> productosPage = (soloActivos != null) ?
+                productoRepository.findByEstadoProducto(soloActivos, pageable) :
+                productoRepository.findAll(pageable);
 
-        if (soloActivos != null) {
-            productos = productoRepository.findByEstadoProducto(soloActivos);
-        }else{
-            productos = productoRepository.findAll();
-        }
-
-        return productos.stream()
-                .map(productoMapper::toProductoResponseDto)
-                .collect(Collectors.toList());
+        return productosPage.map(productoMapper::toProductoResponseDto);
     }
 
     @Override
@@ -124,89 +137,92 @@ public class ProductoServiceImpl implements ProductoService {
         productoRepository.save(producto);
     }
 
-    //    @Override
-//    @Transactional
-//    public List<ProductoResponseDto> crearProductosBatch(ProductoBatchRequestDto batchRequestDto) {
-//        List<ProductoRequestDto> dtos = batchRequestDto.productos();
-//
-//        // --- 1. VALIDACIÓN DE SKUs ---
-//        Set<String> skusDelRequest = dtos.stream()
-//                .map(ProductoRequestDto::sku)
-//                .collect(Collectors.toSet());
-//
-//        // a) Validar duplicados dentro del propio request
-//        if (skusDelRequest.size() != dtos.size()) {
-//            // Encontrar cuáles están duplicados para un mensaje de error claro
-//            String duplicados = dtos.stream()
-//                    .map(ProductoRequestDto::sku)
-//                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-//                    .entrySet().stream()
-//                    .filter(entry -> entry.getValue() > 1)
-//                    .map(Map.Entry::getKey)
-//                    .collect(Collectors.joining(", "));
-//            throw new DuplicateResourceException("El request contiene SKUs duplicados: " + duplicados);
-//        }
-//
-//        // b) Validar duplicados contra la Base de Datos
-//        List<Producto> productosExistentes = productoRepository.findBySkuIn(List.copyOf(skusDelRequest));
-//        if (!productosExistentes.isEmpty()) {
-//            String skusEncontrados = productosExistentes.stream()
-//                    .map(Producto::getSku)
-//                    .collect(Collectors.joining(", "));
-//            throw new DuplicateResourceException("Los siguientes SKUs ya existen en la base de datos: " + skusEncontrados);
-//        }
-//
-//        // --- 2. VALIDACIÓN DE CATEGORÍAS ---
-//        Set<Long> categoriaIds = dtos.stream()
-//                .map(ProductoRequestDto::idCategoria)
-//                .collect(Collectors.toSet());
-//
-//        Map<Long, Categoria> categoriasMap = categoriaRepository.findAllById(categoriaIds).stream()
-//                .collect(Collectors.toMap(Categoria::getIdCategoria, Function.identity()));
-//
-//        validarRecursosEncontrados(categoriaIds, categoriasMap.keySet(), "Categorías");
-//
-//        // --- 3. VALIDACIÓN DE SEDES ---
-//        Set<Long> sedeIds = dtos.stream()
-//                .flatMap(dto -> dto.stocks().stream()) // Aplana todas las listas de stocks
-//                .map(ProductoRequestDto.StockSedeRequestDto::idSede) // Obtiene todos los idSede
-//                .collect(Collectors.toSet()); // Únicos
-//
-//        Map<Long, Sede> sedesMap = sedeRepository.findAllById(sedeIds).stream()
-//                .collect(Collectors.toMap(Sede::getIdSede, Function.identity()));
-//
-//        validarRecursosEncontrados(sedeIds, sedesMap.keySet(), "Sedes");
-//
-//        // --- 4. MAPEO Y GUARDADO ---
-//        List<Producto> productosAGuardar = dtos.stream().map(dto -> {
-//            Categoria categoria = categoriasMap.get(dto.idCategoria());
-//
-//            // Obtenemos la lista de entidades Sede para este producto específico
-//            List<Sede> sedesParaEsteProducto = dto.stocks().stream()
-//                    .map(stockDto -> sedesMap.get(stockDto.idSede()))
-//                    .collect(Collectors.toList());
-//
-//            return productoMapper.toProducto(dto, categoria, sedesParaEsteProducto);
-//        }).collect(Collectors.toList());
-//
-//        // Guardamos todos los productos en una sola operación
-//        List<Producto> productosGuardados = productoRepository.saveAll(productosAGuardar);
-//
-//        // --- 5. RESPUESTA ---
-//        return productosGuardados.stream()
-//                .map(productoMapper::toProductoResponseDto)
-//                .collect(Collectors.toList());
-//    }
-//
-//    private void validarRecursosEncontrados(Set<Long> idsSolicitados, Set<Long> idsEncontrados, String nombreRecurso) {
-//        if (idsSolicitados.size() != idsEncontrados.size()) {
-//            Set<Long> idsFaltantes = Set.copyOf(idsSolicitados);
-//            idsFaltantes.removeAll(idsEncontrados);
-//
-//            Set<Long> faltantes = idsSolicitados.stream()
-//                    .filter(id -> !idsEncontrados.contains(id))
-//                    .collect(Collectors.toSet());
-//            throw new ResourceNotFoundException("No se encontraron los siguientes recursos ('" + nombreRecurso + "') con IDs: " + faltantes);
-//        }
-//    }
+    @Override
+    @Transactional
+    public List<ProductoResponseDto> crearProductosBatch(ProductoBatchRequestDto batchRequestDto) {
+        List<ProductoRequestDto> dtos = batchRequestDto.productos();
+
+        Set<String> skusDelRequest = dtos.stream()
+                .map(ProductoRequestDto::sku)
+                .collect(Collectors.toSet());
+
+        if (skusDelRequest.size() != dtos.size()) {
+            String duplicados = dtos.stream()
+                    .map(ProductoRequestDto::sku)
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                    .entrySet().stream()
+                    .filter(entry -> entry.getValue() > 1)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.joining(", "));
+            throw new DuplicateResourceException("El request contiene SKUs duplicados: " + duplicados);
+        }
+
+        List<Producto> productosExistentes = productoRepository.findBySkuIn(List.copyOf(skusDelRequest));
+        if (!productosExistentes.isEmpty()) {
+            String skusEncontrados = productosExistentes.stream()
+                    .map(Producto::getSku)
+                    .collect(Collectors.joining(", "));
+            throw new DuplicateResourceException("Los siguientes SKUs ya existen en la base de datos: " + skusEncontrados);
+        }
+
+        Set<Long> categoriaIds = dtos.stream()
+                .map(ProductoRequestDto::idCategoria)
+                .collect(Collectors.toSet());
+
+        Map<Long, Categoria> categoriasMap = categoriaRepository.findAllById(categoriaIds).stream()
+                .collect(Collectors.toMap(Categoria::getIdCategoria, Function.identity()));
+
+        validarRecursosEncontrados(categoriaIds, categoriasMap.keySet(), "Categorías");
+
+        Set<Long> sedeIds = dtos.stream()
+                .flatMap(dto -> dto.stocks().stream())
+                .map(ProductoRequestDto.StockSedeRequestDto::idSede)
+                .collect(Collectors.toSet());
+
+        Map<Long, Sede> sedesMap = sedeRepository.findAllById(sedeIds).stream()
+                .collect(Collectors.toMap(Sede::getIdSede, Function.identity()));
+
+        validarRecursosEncontrados(sedeIds, sedesMap.keySet(), "Sedes");
+
+        List<Producto> productosAGuardar = dtos.stream().map(dto -> {
+            Categoria categoria = categoriasMap.get(dto.idCategoria());
+
+            List<Sede> sedesParaEsteProducto = dto.stocks().stream()
+                    .map(stockDto -> sedesMap.get(stockDto.idSede()))
+                    .collect(Collectors.toList());
+
+            return productoMapper.toProducto(dto, categoria, sedesParaEsteProducto);
+        }).collect(Collectors.toList());
+
+        List<Producto> productosGuardados = productoRepository.saveAll(productosAGuardar);
+
+        List<MovimientoInventario> movimientosAGuardar = new ArrayList<>();
+        for (Producto producto : productosGuardados) {
+            for (StockSede stock : producto.getStocks()) {
+                MovimientoInventario movimiento = MovimientoInventario.builder()
+                        .producto(producto)
+                        .sede(stock.getSede())
+                        .tipoMovimiento(TipoMovimientoInventario.INGRESO_COMPRA)
+                        .cantidad(stock.getCantidad())
+                        .fechaMovimiento(LocalDate.now())
+                        .razon("Stock inicial en creación por lote")
+                        .build();
+                movimientosAGuardar.add(movimiento);
+            }
+        }
+        movimientoInventarioRepository.saveAll(movimientosAGuardar);
+
+        return productosGuardados.stream()
+                .map(productoMapper::toProductoResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    private void validarRecursosEncontrados(Set<Long> idsSolicitados, Set<Long> idsEncontrados, String nombreRecurso) {
+        if (idsSolicitados.size() != idsEncontrados.size()) {
+            Set<Long> idsFaltantes = idsSolicitados.stream()
+                    .filter(id -> !idsEncontrados.contains(id))
+                    .collect(Collectors.toSet());
+            throw new ResourceNotFoundException("No se encontraron los siguientes recursos ('" + nombreRecurso + "') con IDs: " + idsFaltantes);
+        }
+    }
 }

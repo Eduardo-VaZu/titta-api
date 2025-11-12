@@ -14,7 +14,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -75,19 +78,21 @@ public class ProductoController {
     }
 
     @Operation(summary = "Obtener todos los productos",
-            description = "Devuelve una lista de todos los productos.")
+            description = "Devuelve una lista paginada de todos los productos. " +
+                    "Soporta filtrado por estado, paginación y ordenamiento. " +
+                    "Ejemplo: ?page=0&size=10&sort=precio,desc&estado=true")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Lista de productos obtenida",
+            @ApiResponse(responseCode = "200", description = "Lista de productos paginada",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(type = "array", implementation = ProductoResponseDto.class)))
-    })
+                            schema = @Schema(implementation = Page.class)))})
     @GetMapping
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<ProductoResponseDto>> getAllProductos(
+    public ResponseEntity<Page<ProductoResponseDto>> getAllProductos(
             @Parameter(description = "Filtrar por estado (true = activos, false = inactivos)")
-            @RequestParam(required = false) Boolean estado) {
-        List<ProductoResponseDto> productos = productoService.getAllProductos(estado);
-        return ResponseEntity.ok(productos);
+            @RequestParam(required = false) Boolean estado,
+            @ParameterObject Pageable pageable) {
+        Page<ProductoResponseDto> productosPage = productoService.getAllProductos(estado, pageable);
+        return ResponseEntity.ok(productosPage);
     }
 
     @Operation(summary = "Actualizar un producto",
@@ -103,15 +108,14 @@ public class ProductoController {
     @PutMapping("/{idProducto}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<ProductoResponseDto> updateProducto(
-            @PathVariable Long idProducto,
-            @Valid @RequestBody ProductoUpdateDto updateDto) {
-
+            @PathVariable Long idProducto, @Valid @RequestBody ProductoUpdateDto updateDto) {
         ProductoResponseDto productoActualizado = productoService.updateProducto(idProducto, updateDto);
         return ResponseEntity.ok(productoActualizado);
     }
 
     @Operation(summary = "Desactivar un producto (Soft Delete)",
-            description = "Realiza un borrado lógico del producto, estableciendo su estado a 'false'. No lo elimina de la base de datos.") // <-- MODIFICADO
+            description = "Realiza un borrado lógico del producto, estableciendo su estado a 'false'. No lo elimina de la base de datos.")
+    // <-- MODIFICADO
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Producto desactivado exitosamente"),
             @ApiResponse(responseCode = "404", description = "Producto no encontrado",
@@ -125,23 +129,26 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
-//    @Operation(summary = "Crear múltiples productos (Batch)",
-//            description = "Crea una lista de productos en una sola transacción. Valida todos los SKUs, Categorías y Sedes antes de guardar.")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "201", description = "Productos creados exitosamente",
-//                    content = @Content(mediaType = "application/json",
-//                            schema = @Schema(type = "array", implementation = ProductoResponseDto.class))),
-//            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos (DTO inválido, SKUs duplicados en el request)",
-//                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//            @ApiResponse(responseCode = "404", description = "Recurso no encontrado (Alguna Categoría o Sede no existe)",
-//                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-//            @ApiResponse(responseCode = "409", description = "Conflicto (Alguno de los SKUs ya existe en la BD)",
-//                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-//    })
-//    @PostMapping("/batch") // <-- NUEVO
-//    @PreAuthorize("hasRole('ADMINISTRADOR')")
-//    public ResponseEntity<List<ProductoResponseDto>> crearProductosBatch(@Valid @RequestBody ProductoBatchRequestDto batchRequestDto) {
-//        List<ProductoResponseDto> nuevosProductos = productoService.crearProductosBatch(batchRequestDto);
-//        return new ResponseEntity<>(nuevosProductos, HttpStatus.CREATED);
-//    }
+    @Operation(summary = "Crear múltiples productos (Batch)",
+            description = "Crea una lista de productos en una sola transacción. Valida todos los SKUs, Categorías y Sedes antes de guardar.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Productos creados exitosamente",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(type = "array", implementation = ProductoResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos (DTO inválido, SKUs duplicados en el request)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Recurso no encontrado (Alguna Categoría o Sede no existe)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Conflicto (Alguno de los SKUs ya existe en la BD)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "No autorizado (Requiere rol ADMIN)",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping("/batch")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<List<ProductoResponseDto>> crearProductosBatch(
+            @Valid @RequestBody ProductoBatchRequestDto batchRequestDto) {
+        List<ProductoResponseDto> nuevosProductos = productoService.crearProductosBatch(batchRequestDto);
+        return new ResponseEntity<>(nuevosProductos, HttpStatus.CREATED);
+    }
 }

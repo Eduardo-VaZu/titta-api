@@ -1,6 +1,7 @@
 package com.titta.api.features.product.mapper;
 
 import com.titta.api.domain.model.*;
+import com.titta.api.features.inventory.dto.response.StockSedeResponseDto;
 import com.titta.api.features.product.dto.request.ProductoRequestDto;
 import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import org.springframework.stereotype.Component;
@@ -63,13 +64,16 @@ public class ProductoMapper {
             );
         }
 
-        List<ProductoResponseDto.StockSedeResponseDto> stocksDto = producto.getStocks().stream()
-                .map(stock -> new ProductoResponseDto.StockSedeResponseDto(
-                        producto.getIdProducto(),
+        // --- 2. ACTUALIZAR ESTA LÓGICA DE MAPEO ---
+        List<StockSedeResponseDto> stocksDto = producto.getStocks().stream()
+                .map(stock -> new StockSedeResponseDto(
+                        // El DTO unificado espera: idSede, nombreSede, stock
                         stock.getSede().getIdSede(),
+                        stock.getSede().getNombreSede(),
                         stock.getCantidad()
                 ))
                 .collect(Collectors.toList());
+        // --- FIN DE LA ACTUALIZACIÓN ---
 
         return new ProductoResponseDto(
                 producto.getIdProducto(),
