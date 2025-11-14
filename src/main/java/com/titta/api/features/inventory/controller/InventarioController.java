@@ -49,7 +49,7 @@ public class InventarioController {
                             schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/producto/{idProducto}/sede/{idSede}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADORA', 'EMPLEADO')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'EMPLEADO')")
     public ResponseEntity<StockSedeResponseDto> ajustarStock(
             @Parameter(description = "ID del producto a ajustar", required = true)
             @PathVariable Long idProducto,
