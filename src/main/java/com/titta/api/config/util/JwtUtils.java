@@ -51,7 +51,7 @@ public class JwtUtils {
             String jwtToken = JWT.create()
                     .withIssuer(this.userGenerator)
                     .withSubject(username)
-                    .withClaim("authorities", authorities) // Los refresh tokens NO deben tener permisos
+                    .withClaim("authorities", authorities)
                     .withIssuedAt(issuedAt)
                     .withExpiresAt(expirationDate)
                     .sign(algorithm);
@@ -173,26 +173,6 @@ public class JwtUtils {
         boolean isExpired = expiration != null && expiration.before(new Date());
         log.debug("Comprobación de caducidad del token - caduca a las: {}, está caducado: {}", expiration, isExpired);
         return isExpired;
-    }
-
-    public Date getExpirationDate(DecodedJWT decodedJWT) {
-        if (decodedJWT == null) {
-            log.error("DecodedJWT es nulo");
-            throw new IllegalArgumentException("DecodedJWT no puede ser null");
-        }
-        Date expiration = decodedJWT.getExpiresAt();
-        log.debug("Fecha de caducidad del token: {}", expiration);
-        return expiration;
-    }
-
-    public String getIssuer(DecodedJWT decodedJWT) {
-        if (decodedJWT == null) {
-            log.error("DecodedJWT es nulo");
-            throw new IllegalArgumentException("DecodedJWT no puede ser null");
-        }
-        String issuer = decodedJWT.getIssuer();
-        log.debug("Emisor de tokens: {}", issuer);
-        return issuer;
     }
 
     public boolean validateTokenStructure(String token) {

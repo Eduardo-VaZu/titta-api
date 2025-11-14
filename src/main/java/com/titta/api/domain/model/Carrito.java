@@ -31,6 +31,11 @@ public class Carrito extends Auditable {
 //    @Column(name = "fecha_actualizacion", nullable = false)
 //    private LocalDateTime fechaActualizacion;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_sede")
+    @EqualsAndHashCode.Exclude
+    private Sede sede;
+
     @Column(name = "estado", nullable = false, length = 50)
     private String estado;
 

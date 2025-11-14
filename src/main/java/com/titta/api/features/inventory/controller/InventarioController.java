@@ -21,7 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/inventario")
-@Tag(name = "3. Gestión de Inventario", description = "Endpoints para ajustar y consultar el stock de productos.")
+@Tag(name = "Gestión de Inventario", description = "Endpoints para ajustar y consultar el stock de productos.")
 public class InventarioController {
 
     @Autowired

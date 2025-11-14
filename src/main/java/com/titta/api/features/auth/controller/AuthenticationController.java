@@ -26,7 +26,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@Tag(name = "1. Autenticación", description = "Endpoints para el registro, inicio de sesión y gestión de tokens.")
+@Tag(name = "Autenticación", description = "Endpoints para el registro, inicio de sesión y gestión de tokens.")
 public class AuthenticationController {
 
     @Autowired

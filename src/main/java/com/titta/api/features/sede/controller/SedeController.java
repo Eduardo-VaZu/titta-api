@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/sedes")
-@Tag(name = "4. Gestión de Sedes", description = "Endpoints para el CRUD completo de sedes (tiendas).")
+@Tag(name = "Gestión de Sedes", description = "Endpoints para el CRUD completo de sedes (tiendas).")
 public class SedeController {
 
     @Autowired
