@@ -20,16 +20,16 @@ public class Usuario extends Auditable {
     @Column(name = "id_usuario")
     private Long idUsuario;
 
-    @Column(name = "nombre", nullable = false, length = 50)
+    @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
-    @Column(name = "apellido_paterno", nullable = false, length = 50)
+    @Column(name = "apellido_paterno", nullable = false, length = 100)
     private String apellidoPaterno;
 
-    @Column(name = "apellido_materno", length = 50)
+    @Column(name = "apellido_materno", nullable = false, length = 100)
     private String apellidoMaterno;
 
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
 //    @CreationTimestamp

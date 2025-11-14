@@ -43,7 +43,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     @Override
     @Transactional(readOnly = true)
     public List<CategoriaResponseDto> obterCategorias() {
-        return categoriaRepository.findAll()
+        return categoriaRepository.findAllByEstado(true)
                 .stream()
                 .map(categoriaMapper::toCategoriaResponseDto)
                 .collect(Collectors.toList());
@@ -87,9 +87,10 @@ public class CategoriaServiceImpl implements CategoriaService {
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró la categoría con ID: " + idCategoria));
 
         if (!categoria.getProductos().isEmpty()) {
-            throw new DataIntegrityViolationException("No se puede eliminar la categoría (ID: " + idCategoria + "). Aún tiene productos asociados.");
+            throw new DataIntegrityViolationException("No se puede desactivar la categoría (ID: " + idCategoria + "). Aún tiene productos asociados.");
         }
 
-        categoriaRepository.delete(categoria);
+        categoria.setEstado(false);
+        categoriaRepository.save(categoria);
     }
 }

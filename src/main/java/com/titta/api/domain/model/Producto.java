@@ -33,7 +33,7 @@ public class Producto extends Auditable {
     @Column(name = "precio", nullable = false, precision = 10, scale = 2)
     private BigDecimal precio;
 
-    @Column(name = "estado_producto", nullable = false, length = 5)
+    @Column(name = "estado_producto", nullable = false)
     private Boolean estadoProducto;
 
     @ManyToOne(fetch = FetchType.LAZY)

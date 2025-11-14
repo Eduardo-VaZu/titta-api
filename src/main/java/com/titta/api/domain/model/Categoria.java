@@ -22,6 +22,9 @@ public class Categoria extends Auditable {
     @Column(name = "nombre_categoria", nullable = false, unique = true, length = 50)
     private String nombreCategoria;
 
+    @Column(name = "estado", nullable = false)
+    private Boolean estado = true;
+
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     private List<Producto> productos;

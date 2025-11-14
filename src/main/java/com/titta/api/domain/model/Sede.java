@@ -26,7 +26,7 @@ public class Sede extends Auditable {
     @Column(name = "telefono", unique = true, length = 20)
     private String telefono;
 
-    @Column(name = "estado", nullable = false, length = 50)
+    @Column(name = "estado", nullable = false)
     private Boolean estado;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
