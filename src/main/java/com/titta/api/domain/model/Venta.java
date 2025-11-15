@@ -12,7 +12,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "tbl_venta")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

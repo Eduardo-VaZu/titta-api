@@ -5,12 +5,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tbl_categoria")
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Categoria extends Auditable {
 
@@ -28,4 +30,17 @@ public class Categoria extends Auditable {
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     private List<Producto> productos;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Categoria categoria = (Categoria) o;
+        return Objects.equals(idCategoria, categoria.idCategoria);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), idCategoria);
+    }
 }

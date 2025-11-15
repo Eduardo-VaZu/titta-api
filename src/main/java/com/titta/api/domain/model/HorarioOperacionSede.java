@@ -7,7 +7,8 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "tbl_horario_operacion_sede")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

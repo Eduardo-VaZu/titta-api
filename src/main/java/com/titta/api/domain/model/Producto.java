@@ -6,11 +6,13 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "tbl_producto")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -48,4 +50,17 @@ public class Producto extends Auditable {
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     private Set<StockSede> stocks = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Producto producto = (Producto) o;
+        return Objects.equals(idProducto, producto.idProducto);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), idProducto);
+    }
 }

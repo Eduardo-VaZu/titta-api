@@ -5,11 +5,13 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "tbl_sede")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -45,4 +47,17 @@ public class Sede extends Auditable {
     @OneToMany(mappedBy = "sede", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UsuarioSede> usuariosSedes = new HashSet<>();
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Sede sede = (Sede) o;
+        return Objects.equals(idSede, sede.idSede);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), idSede);
+    }
 }

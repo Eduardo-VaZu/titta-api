@@ -164,17 +164,6 @@ public class JwtUtils {
         return username;
     }
 
-    public boolean isTokenExpired(DecodedJWT decodedJWT) {
-        if (decodedJWT == null) {
-            log.error("DecodedJWT es nulo");
-            return true;
-        }
-        Date expiration = decodedJWT.getExpiresAt();
-        boolean isExpired = expiration != null && expiration.before(new Date());
-        log.debug("Comprobación de caducidad del token - caduca a las: {}, está caducado: {}", expiration, isExpired);
-        return isExpired;
-    }
-
     public boolean validateTokenStructure(String token) {
         if (token == null || token.trim().isEmpty()) {
             log.error("El token es nulo o está vacío");

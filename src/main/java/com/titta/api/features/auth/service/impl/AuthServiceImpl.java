@@ -20,6 +20,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -61,6 +62,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private UserDetailsService userDetailsService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
 
     @Override
@@ -109,7 +112,10 @@ public class AuthServiceImpl implements AuthService {
         String username = authLoginRequest.username();
         String password = authLoginRequest.password();
 
-        Authentication authentication = this.authenticate(username, password);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String accessToken = this.jwtUtils.createAccessToken(authentication);
@@ -183,26 +189,12 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private Authentication authenticate(String username, String password) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-        if (userDetails == null) {
-            throw new BadCredentialsException("Usuario no encontrado.");
-        }
-
-        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            throw new BadCredentialsException("Contraseña inválida.");
-        }
-
-        return new UsernamePasswordAuthenticationToken(username, userDetails.getPassword(), userDetails.getAuthorities());
-    }
-
     private Cookie createRefreshTokenCookie(String token) {
         Cookie refreshTokenCookie = new Cookie("refresh_token", token);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/api/v1/auth");
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-        // refreshTokenCookie.setSecure(true);
+        // refreshTokenCookie.setSecure(true); // Deberías habilitar esto en producción (con HTTPS)
         return refreshTokenCookie;
     }
 }

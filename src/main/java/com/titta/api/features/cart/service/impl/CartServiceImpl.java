@@ -4,6 +4,7 @@ import com.titta.api.config.exception.ResourceNotFoundException;
 import com.titta.api.domain.model.*;
 import com.titta.api.domain.repository.*;
 import com.titta.api.features.cart.dto.request.AddToCartRequestDto;
+import com.titta.api.features.cart.dto.request.UpdateCartItemRequestDto;
 import com.titta.api.features.cart.dto.response.CartResponseDto;
 import com.titta.api.features.cart.mapper.CartMapper;
 import com.titta.api.features.cart.service.CartService;
@@ -94,6 +95,66 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toCartResponseDto(carritoGuardado);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public CartResponseDto getActiveCart() {
+        Usuario usuario = getAuthenticatedUser();
+        Carrito carrito = getOrCreateActiveCart(usuario);
+        return cartMapper.toCartResponseDto(carrito);
+    }
+
+    @Override
+    public CartResponseDto updateItemQuantity(Long idProducto, UpdateCartItemRequestDto requestDto) {
+        Usuario usuario = getAuthenticatedUser();
+        Carrito carrito = getOrCreateActiveCart(usuario);
+
+        if (carrito.getSede() == null) {
+            throw new ResourceNotFoundException("No se puede actualizar la cantidad, el carrito está vacío y no tiene sede asignada.");
+        }
+
+        ItemCarrito item = findItemInCart(carrito, idProducto);
+
+        StockSede stock = stockSedeRepository.findById(new StockSedeId(idProducto, carrito.getSede().getIdSede()))
+                .orElseThrow(() -> new ResourceNotFoundException("No hay stock registrado para este producto en la sede del carrito."));
+
+        int nuevaCantidad = requestDto.cantidad();
+        if (stock.getCantidad() < nuevaCantidad) {
+            throw new IllegalArgumentException("Stock insuficiente. Stock disponible: " + stock.getCantidad() + ", intentas asignar: " + nuevaCantidad);
+        }
+
+        item.setCantidad(nuevaCantidad);
+        log.info("Cantidad actualizada a {} para Producto (ID: {}) en Carrito (ID: {})", nuevaCantidad, idProducto, carrito.getId());
+
+        Carrito carritoGuardado = cartRepository.save(carrito);
+        return cartMapper.toCartResponseDto(carritoGuardado);
+    }
+
+    @Override
+    public CartResponseDto removeItemFromCart(Long idProducto) {
+        Usuario usuario = getAuthenticatedUser();
+        Carrito carrito = getOrCreateActiveCart(usuario);
+
+        ItemCarrito item = findItemInCart(carrito, idProducto);
+
+        carrito.getItems().remove(item);
+        log.info("Producto (ID: {}) eliminado del Carrito (ID: {})", idProducto, carrito.getId());
+
+        Carrito carritoGuardado = cartRepository.save(carrito);
+        return cartMapper.toCartResponseDto(carritoGuardado);
+    }
+
+    @Override
+    public CartResponseDto clearCart() {
+        Usuario usuario = getAuthenticatedUser();
+        Carrito carrito = getOrCreateActiveCart(usuario);
+
+        carrito.getItems().clear();
+        log.info("Todos los items eliminados del Carrito (ID: {})", carrito.getId());
+
+        Carrito carritoGuardado = cartRepository.save(carrito);
+        return cartMapper.toCartResponseDto(carritoGuardado);
+    }
+
     private Usuario getAuthenticatedUser() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         return usuarioRepository.findByEmail(userEmail)
@@ -110,5 +171,12 @@ public class CartServiceImpl implements CartService {
                             .build();
                     return cartRepository.save(nuevoCarrito);
                 });
+    }
+
+    private ItemCarrito findItemInCart(Carrito carrito, Long idProducto) {
+        return carrito.getItems().stream()
+                .filter(item -> item.getId().getIdProducto().equals(idProducto))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("El producto (ID: " + idProducto + ") no se encuentra en tu carrito."));
     }
 }

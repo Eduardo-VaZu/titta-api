@@ -7,6 +7,7 @@ import com.titta.api.domain.repository.MovimientoInventarioRepository;
 import com.titta.api.domain.repository.ProductoRepository;
 import com.titta.api.domain.repository.SedeRepository;
 import com.titta.api.domain.repository.StockSedeRepository;
+import com.titta.api.features.inventory.dto.request.UpdateStockRequestDto;
 import com.titta.api.features.inventory.dto.response.StockSedeResponseDto;
 import com.titta.api.features.inventory.mapper.InventarioMapper;
 import com.titta.api.features.inventory.service.InventarioService;
@@ -34,7 +35,7 @@ public class InventarioServiceImpl implements InventarioService {
 
     @Override
     @Transactional
-    public StockSedeResponseDto ajustarStock(Long idProducto, Long idSede, int cantidad, String razon) {
+    public StockSedeResponseDto ajustarStock(Long idProducto, Long idSede, UpdateStockRequestDto stockDto) {
 
         Producto producto = productoRepository.findById(idProducto)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + idProducto));
@@ -47,7 +48,7 @@ public class InventarioServiceImpl implements InventarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró stock para el producto " + idProducto + " en la sede " + idSede));
 
         int stockAntiguo = stockSede.getCantidad();
-        int stockNuevo = stockAntiguo + cantidad;
+        int stockNuevo = stockAntiguo + stockDto.cantidad();
 
         if (stockNuevo < 0) {
             throw new IllegalArgumentException("El ajuste resultaría en stock negativo (" + stockNuevo + "). Stock actual: " + stockAntiguo);
@@ -59,9 +60,9 @@ public class InventarioServiceImpl implements InventarioService {
                 .producto(producto)
                 .sede(sede)
                 .tipoMovimiento(TipoMovimientoInventario.AJUSTE_MANUAL)
-                .cantidad(cantidad)
+                .cantidad(stockDto.cantidad())
                 .fechaMovimiento(LocalDate.now())
-                .razon(razon)
+                .razon(stockDto.razon())
                 .build();
 
         movimientoInventarioRepository.save(movimiento);

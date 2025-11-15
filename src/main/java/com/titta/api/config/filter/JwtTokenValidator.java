@@ -3,6 +3,8 @@ package com.titta.api.config.filter;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.titta.api.config.exception.error.ErrorResponse;
 import com.titta.api.config.util.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -28,9 +32,11 @@ import java.util.Collection;
 public class JwtTokenValidator extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
+    private final ObjectMapper objectMapper;
 
-    public JwtTokenValidator(JwtUtils jwtUtils) {
+    public JwtTokenValidator(JwtUtils jwtUtils, ObjectMapper objectMapper) {
         this.jwtUtils = jwtUtils;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -61,12 +67,6 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                 }
 
                 DecodedJWT decodedJWT = jwtUtils.validateAccessToken(jwtToken);
-
-                if (jwtUtils.isTokenExpired(decodedJWT)) {
-                    log.warn("El token JWT ha caducado para el usuario: {}", jwtUtils.extractUserName(decodedJWT));
-                    handleAuthenticationError(response, "El token ha caducado", HttpStatus.UNAUTHORIZED);
-                    return;
-                }
 
                 String username = jwtUtils.extractUserName(decodedJWT);
                 String stringAuthorities = decodedJWT.getClaim("authorities").asString();
@@ -118,8 +118,15 @@ public class JwtTokenValidator extends OncePerRequestFilter {
     private void handleAuthenticationError(HttpServletResponse response, String message, HttpStatus status)
             throws IOException {
         log.error("Error de autenticación: {} - Status: {}", message, status.value());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                status.value(),
+                message,
+                LocalDateTime.now()
+        );
+
         response.setStatus(status.value());
-        response.setContentType("application/json");
-        response.getWriter().write(String.format("{\"error\":\"%s\",\"status\":%d}", message, status.value()));
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }

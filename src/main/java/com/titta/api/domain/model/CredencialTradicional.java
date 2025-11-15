@@ -5,7 +5,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "tbl_credencial_tradicional")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

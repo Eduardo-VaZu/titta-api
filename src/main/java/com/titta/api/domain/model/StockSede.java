@@ -5,7 +5,8 @@ import lombok.*;
 
 @Entity
 @Table(name = "tbl_stock_sede")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -29,5 +30,5 @@ public class StockSede {
     @Column(name = "cantidad", nullable = false)
     private int cantidad;
 
-    
+
 }
