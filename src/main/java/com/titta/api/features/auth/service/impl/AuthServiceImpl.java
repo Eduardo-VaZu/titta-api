@@ -109,26 +109,30 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse loginUser(AuthLoginRequest authLoginRequest, HttpServletResponse response) {
-        String username = authLoginRequest.username();
-        String password = authLoginRequest.password();
-
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, password)
+                new UsernamePasswordAuthenticationToken(
+                        authLoginRequest.username(),
+                        authLoginRequest.password())
         );
+
+        Usuario usuario = usuarioRepository.findByEmail(authLoginRequest.username())
+                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + authLoginRequest.username() + " no existe."));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String accessToken = this.jwtUtils.createAccessToken(authentication);
         String refreshToken = this.jwtUtils.createRefreshToken(authentication);
 
-        Usuario usuario = usuarioRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe."));
-
         AuthResponse.UsuarioResponseDto usuarioDto = authMapper.toUsuarioResponseDto(usuario);
 
         response.addCookie(createRefreshTokenCookie(refreshToken));
 
-        return new AuthResponse(usuarioDto, accessToken, "Usuario logueado exitosamente", true);
+        return AuthResponse.builder()
+                .usuario(usuarioDto)
+                .jwt(accessToken)
+                .message("Usuario logueado exitosamente")
+                .status(true)
+                .build();
     }
 
     @Override

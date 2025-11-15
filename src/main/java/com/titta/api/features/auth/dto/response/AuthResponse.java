@@ -1,7 +1,9 @@
 package com.titta.api.features.auth.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Builder;
 
+@Builder
 @JsonPropertyOrder({"usuario", "jwt", "message", "status"})
 public record AuthResponse(
         UsuarioResponseDto usuario,
