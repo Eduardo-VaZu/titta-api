@@ -88,11 +88,13 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                     return;
                 }
 
-                log.info("Autenticación JWT exitosa para el usuario: {}", username);
-                SecurityContext context = SecurityContextHolder.getContext();
                 Authentication authenticationToken = new UsernamePasswordAuthenticationToken(
                         username, null, authorities);
+
+                log.info("Autenticación JWT exitosa para el usuario: {}", username);
+                SecurityContext context = SecurityContextHolder.getContext();
                 context.setAuthentication(authenticationToken);
+
                 SecurityContextHolder.setContext(context);
 
             } catch (TokenExpiredException e) {

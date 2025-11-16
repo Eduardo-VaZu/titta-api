@@ -1,13 +1,13 @@
 package com.titta.api.features.auth.mapper;
 
 import com.titta.api.domain.model.Usuario;
-import com.titta.api.features.auth.dto.response.AuthResponse;
+import com.titta.api.features.auth.dto.response.AuthLoginResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AuthMapper {
 
-    public AuthResponse.UsuarioResponseDto toUsuarioResponseDto(Usuario usuario) {
+    public AuthLoginResponse.UsuarioResponseDto toUsuarioLoginResponseDto(Usuario usuario) {
         if (usuario == null) {
             return null;
         }
@@ -16,7 +16,7 @@ public class AuthMapper {
             throw new IllegalStateException("El usuario " + usuario.getEmail() + " no tiene un rol asignado.");
         }
 
-        return new AuthResponse.UsuarioResponseDto(
+        return new AuthLoginResponse.UsuarioResponseDto(
                 usuario.getIdUsuario(),
                 usuario.getNombre(),
                 usuario.getEmail(),
@@ -24,4 +24,5 @@ public class AuthMapper {
                 usuario.isEstadoUsuario()
         );
     }
+
 }

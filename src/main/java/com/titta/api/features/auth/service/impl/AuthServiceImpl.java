@@ -13,7 +13,8 @@ import com.titta.api.domain.repository.TokenBlacklistRepository;
 import com.titta.api.domain.repository.UsuarioRepository;
 import com.titta.api.features.auth.dto.request.AuthLoginRequest;
 import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
-import com.titta.api.features.auth.dto.response.AuthResponse;
+import com.titta.api.features.auth.dto.response.AuthLoginResponse;
+import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
 import com.titta.api.features.auth.mapper.AuthMapper;
 import com.titta.api.features.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -24,7 +25,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -34,7 +34,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,30 +43,23 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
     @Autowired
     private TokenBlacklistRepository tokenBlacklistRepository;
-
     @Autowired
     private RolRepository rolRepository;
-
     @Autowired
     private AuthMapper authMapper;
-
     @Autowired
     private JwtUtils jwtUtils;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private UserDetailsService userDetailsService;
     @Autowired
     private AuthenticationManager authenticationManager;
 
-
     @Override
-    public AuthResponse registerUser(AuthRegisterRequest registerRequest, HttpServletResponse response) {
+    public AuthRegisterResponse registerUser(AuthRegisterRequest registerRequest, HttpServletResponse response) {
         if (usuarioRepository.findByEmail(registerRequest.email()).isPresent()) {
             throw new DuplicateResourceException("El correo electrónico ya está registrado.");
         }
@@ -90,44 +82,48 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         usuario.setCredencialTradicional(credencial);
-        Usuario usuarioCreado = usuarioRepository.save(usuario);
 
-        AuthResponse.UsuarioResponseDto usuarioDto = authMapper.toUsuarioResponseDto(usuarioCreado);
+        usuarioRepository.save(usuario);
+//
+//        Authentication authentication = new UsernamePasswordAuthenticationToken(
+//                usuarioCreado.getEmail(), null,
+//                Arrays.asList(new SimpleGrantedAuthority("ROLE_".concat(usuarioCreado.getRol().getNombreRol().name())))
+//        );
+//
+//        String accessToken = this.jwtUtils.createAccessToken(authentication);
+//        String refreshToken = this.jwtUtils.createRefreshToken(authentication);
+//
+//        response.addCookie(createRefreshTokenCookie(refreshToken));
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                usuarioCreado.getEmail(), null,
-                Arrays.asList(new SimpleGrantedAuthority("ROLE_".concat(usuarioCreado.getRol().getNombreRol().name())))
-        );
-
-        String accessToken = this.jwtUtils.createAccessToken(authentication);
-        String refreshToken = this.jwtUtils.createRefreshToken(authentication);
-
-        response.addCookie(createRefreshTokenCookie(refreshToken));
-
-        return new AuthResponse(usuarioDto, accessToken, "Usuario registrado y logueado exitosamente", true);
+        return AuthRegisterResponse.builder()
+                .message("Usuario registrado exitosamente")
+                .status(true)
+                .build();
     }
 
     @Override
-    public AuthResponse loginUser(AuthLoginRequest authLoginRequest, HttpServletResponse response) {
+    public AuthLoginResponse loginUser(AuthLoginRequest authLoginRequest, HttpServletResponse response) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authLoginRequest.username(),
                         authLoginRequest.password())
         );
 
-        Usuario usuario = usuarioRepository.findByEmail(authLoginRequest.username())
-                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + authLoginRequest.username() + " no existe."));
+//        Usuario usuario = usuarioRepository.findByEmail(authLoginRequest.username())
+//                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + authLoginRequest.username() + " no existe."));
+
+        Usuario usuarioClain = buildUsuarioClain(authLoginRequest.username());
+
+        AuthLoginResponse.UsuarioResponseDto usuarioDto = authMapper.toUsuarioLoginResponseDto(usuarioClain);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String accessToken = this.jwtUtils.createAccessToken(authentication);
+        String accessToken = this.jwtUtils.createAccessToken(authentication, usuarioClain);
         String refreshToken = this.jwtUtils.createRefreshToken(authentication);
-
-        AuthResponse.UsuarioResponseDto usuarioDto = authMapper.toUsuarioResponseDto(usuario);
 
         response.addCookie(createRefreshTokenCookie(refreshToken));
 
-        return AuthResponse.builder()
+        return AuthLoginResponse.builder()
                 .usuario(usuarioDto)
                 .jwt(accessToken)
                 .message("Usuario logueado exitosamente")
@@ -140,12 +136,14 @@ public class AuthServiceImpl implements AuthService {
         try {
             DecodedJWT decodedJWT = jwtUtils.validateRefreshToken(refreshToken);
             String username = jwtUtils.extractUserName(decodedJWT);
-
             String jti = jwtUtils.extractJti(decodedJWT);
+
             if (tokenBlacklistRepository.existsById(jti)) {
                 log.warn("Intento de refresco con token en blacklist (JTI: {})", jti);
                 throw new BadCredentialsException("Token inválido o expirado");
             }
+
+            Usuario usuarioClain = buildUsuarioClain(username);
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -153,7 +151,7 @@ public class AuthServiceImpl implements AuthService {
                     userDetails.getUsername(), null, userDetails.getAuthorities()
             );
 
-            String newAccessToken = jwtUtils.createAccessToken(authentication);
+            String newAccessToken = jwtUtils.createAccessToken(authentication, usuarioClain);
 
             Map<String, String> response = new HashMap<>();
             response.put("accessToken", newAccessToken);
@@ -200,5 +198,19 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
         // refreshTokenCookie.setSecure(true); // Deberías habilitar esto en producción (con HTTPS)
         return refreshTokenCookie;
+    }
+
+    private Usuario buildUsuarioClain(String username) {
+
+        Usuario usuario = usuarioRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe."));
+
+        return Usuario.builder()
+                .idUsuario(usuario.getIdUsuario())
+                .nombre(usuario.getNombre())
+                .apellidoPaterno(usuario.getApellidoPaterno())
+                .apellidoMaterno(usuario.getApellidoMaterno())
+                .email(usuario.getEmail())
+                .build();
     }
 }

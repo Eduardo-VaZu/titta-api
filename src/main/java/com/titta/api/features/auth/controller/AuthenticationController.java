@@ -2,7 +2,8 @@ package com.titta.api.features.auth.controller;
 
 import com.titta.api.features.auth.dto.request.AuthLoginRequest;
 import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
-import com.titta.api.features.auth.dto.response.AuthResponse;
+import com.titta.api.features.auth.dto.response.AuthLoginResponse;
+import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
 import com.titta.api.features.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -23,18 +24,18 @@ public class AuthenticationController {
     private AuthService authService;
 
     @PostMapping("/log-in")
-    public ResponseEntity<AuthResponse> login(
+    public ResponseEntity<AuthLoginResponse> login(
             @RequestBody @Valid AuthLoginRequest userRequest,
             HttpServletResponse response) {
         return ResponseEntity.ok(this.authService.loginUser(userRequest, response));
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthResponse> register(
+    public ResponseEntity<AuthRegisterRequest> register(
             @RequestBody @Valid AuthRegisterRequest registerRequest,
             HttpServletResponse response) {
-        AuthResponse authResponse = authService.registerUser(registerRequest, response);
-        return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
+        AuthRegisterResponse authRegisterRequest = authService.registerUser(registerRequest, response);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/refresh-token")
