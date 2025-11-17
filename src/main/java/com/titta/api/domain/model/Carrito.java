@@ -1,6 +1,7 @@
 package com.titta.api.domain.model;
 
 import com.titta.api.domain.model.base.Auditable;
+import com.titta.api.domain.model.enums.EstadoCarritoEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,8 +39,9 @@ public class Carrito extends Auditable {
     @EqualsAndHashCode.Exclude
     private Sede sede;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 50)
-    private String estado;
+    private EstadoCarritoEnum estado;
 
     @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude

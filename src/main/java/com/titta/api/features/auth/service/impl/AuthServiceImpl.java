@@ -1,5 +1,6 @@
 package com.titta.api.features.auth.service.impl;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.titta.api.config.exception.DuplicateResourceException;
 import com.titta.api.config.util.JwtUtils;
@@ -15,12 +16,14 @@ import com.titta.api.features.auth.dto.request.AuthLoginRequest;
 import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
 import com.titta.api.features.auth.dto.response.AuthLoginResponse;
 import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
+import com.titta.api.features.auth.dto.response.RefreshTokenResponse;
 import com.titta.api.features.auth.mapper.AuthMapper;
 import com.titta.api.features.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,8 +37,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j
@@ -57,6 +58,9 @@ public class AuthServiceImpl implements AuthService {
     private UserDetailsService userDetailsService;
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Value("${app.security.cookie.secure:false}")
+    private boolean secureCookie;
 
     @Override
     public AuthRegisterResponse registerUser(AuthRegisterRequest registerRequest, HttpServletResponse response) {
@@ -132,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Map<String, String> refreshAccessToken(String refreshToken) {
+    public RefreshTokenResponse refreshAccessToken(String refreshToken, HttpServletResponse response) {
         try {
             DecodedJWT decodedJWT = jwtUtils.validateRefreshToken(refreshToken);
             String username = jwtUtils.extractUserName(decodedJWT);
@@ -144,20 +148,20 @@ public class AuthServiceImpl implements AuthService {
             }
 
             Usuario usuarioClain = buildUsuarioClain(username);
-
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     userDetails.getUsername(), null, userDetails.getAuthorities()
             );
 
             String newAccessToken = jwtUtils.createAccessToken(authentication, usuarioClain);
+            String newRefreshToken = jwtUtils.createRefreshToken(authentication);
 
-            Map<String, String> response = new HashMap<>();
-            response.put("accessToken", newAccessToken);
-            response.put("message", "Token de acceso refrescado exitosamente");
-            return response;
+            response.addCookie(createRefreshTokenCookie(newRefreshToken));
 
+            return RefreshTokenResponse.builder()
+                    .jwt(newAccessToken)
+                    .message("Tokens refrescados exitosamente")
+                    .build();
         } catch (Exception e) {
             log.error("Error al refrescar el token: {}", e.getMessage());
             throw new BadCredentialsException("Refresh token inválido o expirado", e);
@@ -165,29 +169,52 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logoutUser(String refreshToken) {
-        if (refreshToken == null || refreshToken.trim().isEmpty()) {
-            return;
+    public void logoutUser(String refreshToken, String authorizationHeader) {
+        if (refreshToken != null && !refreshToken.trim().isEmpty()) {
+            try {
+                DecodedJWT decodedJWT = jwtUtils.validateRefreshToken(refreshToken);
+                String jti = jwtUtils.extractJti(decodedJWT);
+
+                LocalDateTime expiracion = decodedJWT.getExpiresAt().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime();
+
+                TokenBlacklist tokenBlacklist = TokenBlacklist.builder()
+                        .jti(jti)
+                        .fechaExpiracion(expiracion)
+                        .build();
+
+                tokenBlacklistRepository.save(tokenBlacklist);
+                log.info("Refresh Token (JTI: {}) añadido a la blacklist (logout).", jti);
+
+            } catch (Exception e) {
+                log.warn("Intento de logout con refresh token inválido: {}", e.getMessage());
+            }
         }
 
-        try {
-            DecodedJWT decodedJWT = jwtUtils.validateRefreshToken(refreshToken);
-            String jti = jwtUtils.extractJti(decodedJWT);
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            try {
+                String accessToken = authorizationHeader.substring(7);
+                DecodedJWT decodedJWT = jwtUtils.validateAccessToken(accessToken);
+                String jti = decodedJWT.getId();
 
-            LocalDateTime expiracion = decodedJWT.getExpiresAt().toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
+                LocalDateTime expiracion = decodedJWT.getExpiresAt().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime();
 
-            TokenBlacklist tokenBlacklist = TokenBlacklist.builder()
-                    .jti(jti)
-                    .fechaExpiracion(expiracion)
-                    .build();
+                TokenBlacklist tokenBlacklist = TokenBlacklist.builder()
+                        .jti(jti)
+                        .fechaExpiracion(expiracion)
+                        .build();
+                
+                tokenBlacklistRepository.save(tokenBlacklist);
+                log.info("Access Token (JTI: {}) añadido a la blacklist (logout).", jti);
 
-            tokenBlacklistRepository.save(tokenBlacklist);
-            log.info("Token (JTI: {}) añadido a la blacklist (logout).", jti);
-
-        } catch (Exception e) {
-            log.warn("Intento de logout con token inválido o expirado: {}", e.getMessage());
+            } catch (TokenExpiredException e) {
+                log.debug("Access token ya está expirado, no se añade a blacklist.");
+            } catch (Exception e) {
+                log.warn("Intento de logout con access token inválido: {}", e.getMessage());
+            }
         }
     }
 
@@ -196,7 +223,7 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/api/v1/auth");
         refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-        // refreshTokenCookie.setSecure(true); // Deberías habilitar esto en producción (con HTTPS)
+        refreshTokenCookie.setSecure(secureCookie);
         return refreshTokenCookie;
     }
 

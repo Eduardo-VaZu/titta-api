@@ -85,6 +85,7 @@ public class JwtUtils {
                     .withClaim("ApellidoMaterno", usuario.getApellidoMaterno())
                     .withIssuedAt(issuedAt)
                     .withExpiresAt(expirationDate)
+                    .withJWTId(UUID.randomUUID().toString())
                     .sign(this.algorithm);
 
             log.info("Access Token creado correctamente para el usuario: {}", username);

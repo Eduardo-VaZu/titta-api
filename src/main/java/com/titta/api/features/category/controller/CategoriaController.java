@@ -28,7 +28,7 @@ public class CategoriaController {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{idCategoria}")
-                .buildAndExpand(categoriaRequestDto.nombreCategoria())
+                .buildAndExpand(nuevaCategoria.idCategoria())
                 .toUri();
         return ResponseEntity
                 .created(location)
@@ -57,7 +57,7 @@ public class CategoriaController {
         return ResponseEntity.ok(categoriaService.updateCategoria(idCategoria, categoriaDto));
     }
 
-    @DeleteMapping("/{idCategoria}")
+    @PutMapping("/{idCategoria}/desactivar")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> deleteCategoria(
             @PathVariable Long idCategoria) {

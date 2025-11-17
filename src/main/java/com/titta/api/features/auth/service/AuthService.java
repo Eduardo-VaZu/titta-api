@@ -4,9 +4,8 @@ import com.titta.api.features.auth.dto.request.AuthLoginRequest;
 import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
 import com.titta.api.features.auth.dto.response.AuthLoginResponse;
 import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
+import com.titta.api.features.auth.dto.response.RefreshTokenResponse;
 import jakarta.servlet.http.HttpServletResponse;
-
-import java.util.Map;
 
 public interface AuthService {
 
@@ -14,7 +13,7 @@ public interface AuthService {
 
     AuthLoginResponse loginUser(AuthLoginRequest authLoginRequest, HttpServletResponse response);
 
-    Map<String, String> refreshAccessToken(String refreshToken);
+    RefreshTokenResponse refreshAccessToken(String refreshToken, HttpServletResponse response);
 
-    void logoutUser(String refreshToken);
+    void logoutUser(String refreshToken, String authorizationHeader);
 }

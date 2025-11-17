@@ -63,11 +63,11 @@ public class ProductoController {
     public ResponseEntity<ProductoResponseDto> updateProducto(
             @PathVariable Long idProducto,
             @Valid @RequestBody ProductoUpdateDto updateDto) {
-        ProductoResponseDto producto = productoService.getProductoById(idProducto);
+        ProductoResponseDto producto = productoService.updateProducto(idProducto, updateDto);
         return ResponseEntity.ok(producto);
     }
 
-    @DeleteMapping("/{idProducto}")
+    @PutMapping("/{idProducto}/desactivar")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> deleteProducto(
             @PathVariable Long idProducto) {

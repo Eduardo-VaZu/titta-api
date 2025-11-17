@@ -33,7 +33,7 @@ public class CartMapper {
                 carrito.getId(),
                 carrito.getSede() != null ? carrito.getSede().getIdSede() : null,
                 carrito.getSede() != null ? carrito.getSede().getNombreSede() : null,
-                carrito.getEstado(),
+                carrito.getEstado().name(),
                 itemsDto,
                 subTotal,
                 totalItems

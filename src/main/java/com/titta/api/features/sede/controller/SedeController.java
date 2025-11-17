@@ -60,7 +60,7 @@ public class SedeController {
         return ResponseEntity.ok(sedeService.updateSede(idSede, sedeDto));
     }
 
-    @DeleteMapping("/{idSede}")
+    @PutMapping("/{idSede}/desactivar")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> deleteSede(
             @PathVariable Long idSede) {

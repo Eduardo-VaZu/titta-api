@@ -3,6 +3,7 @@ package com.titta.api.features.auth.service.impl;
 import com.titta.api.domain.model.Usuario;
 import com.titta.api.domain.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +32,10 @@ public class UserDetailServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("El usuario no tiene credenciales tradicionales.");
         }
 
+        if (!usuario.isEstadoUsuario()) {
+            throw new DisabledException("La cuenta está deshabilitada. Contacta al administrador.");
+        }
+        
         return new User(
                 usuario.getEmail(),
                 usuario.getCredencialTradicional().getPasswordHash(),

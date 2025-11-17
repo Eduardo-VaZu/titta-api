@@ -2,6 +2,7 @@ package com.titta.api.features.cart.service.impl;
 
 import com.titta.api.config.exception.ResourceNotFoundException;
 import com.titta.api.domain.model.*;
+import com.titta.api.domain.model.enums.EstadoCarritoEnum;
 import com.titta.api.domain.repository.*;
 import com.titta.api.features.cart.dto.request.AddToCartRequestDto;
 import com.titta.api.features.cart.dto.request.UpdateCartItemRequestDto;
@@ -162,12 +163,12 @@ public class CartServiceImpl implements CartService {
     }
 
     private Carrito getOrCreateActiveCart(Usuario usuario) {
-        return cartRepository.findByUsuario_IdUsuarioAndEstado(usuario.getIdUsuario(), ESTADO_CARRITO_ACTIVO)
+        return cartRepository.findByUsuario_IdUsuarioAndEstado(usuario.getIdUsuario(), EstadoCarritoEnum.ACTIVO)
                 .orElseGet(() -> {
                     log.info("No se encontró carrito activo para Usuario (ID: {}). Creando uno nuevo.", usuario.getIdUsuario());
                     Carrito nuevoCarrito = Carrito.builder()
                             .usuario(usuario)
-                            .estado(ESTADO_CARRITO_ACTIVO)
+                            .estado(EstadoCarritoEnum.ACTIVO)
                             .build();
                     return cartRepository.save(nuevoCarrito);
                 });

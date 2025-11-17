@@ -6,6 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.titta.api.config.exception.error.ErrorResponse;
 import com.titta.api.config.util.JwtUtils;
+import com.titta.api.domain.repository.TokenBlacklistRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,10 +34,12 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final ObjectMapper objectMapper;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
-    public JwtTokenValidator(JwtUtils jwtUtils, ObjectMapper objectMapper) {
+    public JwtTokenValidator(JwtUtils jwtUtils, ObjectMapper objectMapper, TokenBlacklistRepository tokenBlacklistRepository) {
         this.jwtUtils = jwtUtils;
         this.objectMapper = objectMapper;
+        this.tokenBlacklistRepository = tokenBlacklistRepository;
     }
 
     @Override
@@ -67,6 +70,13 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                 }
 
                 DecodedJWT decodedJWT = jwtUtils.validateAccessToken(jwtToken);
+
+                String jti = decodedJWT.getId();
+                if (jti == null || tokenBlacklistRepository.existsById(jti)) {
+                    log.warn("Token JWT está en la blacklist (JTI: {})", jti);
+                    handleAuthenticationError(response, "Token no válido", HttpStatus.UNAUTHORIZED);
+                    return;
+                }
 
                 String username = jwtUtils.extractUserName(decodedJWT);
                 String stringAuthorities = decodedJWT.getClaim("authorities").asString();
@@ -107,7 +117,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                 return;
             } catch (Exception e) {
                 log.error("Error inesperado durante la validación de JWT", e);
-                handleAuthenticationError(response, "Error de autenticación", HttpStatus.INTERNAL_SERVER_ERROR);
+                handleAuthenticationError(response, "Token inválido", HttpStatus.UNAUTHORIZED); // ✅ 401
                 return;
             }
         } else {

@@ -3,11 +3,9 @@ package com.titta.api.features.product.service.impl;
 import com.titta.api.config.exception.DuplicateResourceException;
 import com.titta.api.config.exception.ResourceNotFoundException;
 import com.titta.api.domain.model.*;
+import com.titta.api.domain.model.enums.EstadoCarritoEnum;
 import com.titta.api.domain.model.enums.TipoMovimientoInventario;
-import com.titta.api.domain.repository.CategoriaRepository;
-import com.titta.api.domain.repository.MovimientoInventarioRepository;
-import com.titta.api.domain.repository.ProductoRepository;
-import com.titta.api.domain.repository.SedeRepository;
+import com.titta.api.domain.repository.*;
 import com.titta.api.features.product.dto.request.ProductoBatchRequestDto;
 import com.titta.api.features.product.dto.request.ProductoRequestDto;
 import com.titta.api.features.product.dto.request.ProductoUpdateDto;
@@ -15,6 +13,7 @@ import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import com.titta.api.features.product.mapper.ProductoMapper;
 import com.titta.api.features.product.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,6 +40,8 @@ public class ProductoServiceImpl implements ProductoService {
     private ProductoMapper productoMapper;
     @Autowired
     private MovimientoInventarioRepository movimientoInventarioRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
     @Override
     @Transactional
@@ -131,6 +132,17 @@ public class ProductoServiceImpl implements ProductoService {
     public void deleteProducto(Long idProducto) {
         Producto producto = productoRepository.findById(idProducto)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + idProducto));
+
+        List<Carrito> carritosActivos = cartRepository.findAllByEstado(EstadoCarritoEnum.ACTIVO);
+        boolean enCarritoActivo = carritosActivos.stream()
+                .flatMap(carrito -> carrito.getItems().stream())
+                .anyMatch(item -> item.getProducto().getIdProducto().equals(idProducto));
+
+        if (enCarritoActivo) {
+            throw new DataIntegrityViolationException(
+                    "No se puede desactivar el producto (ID: " + idProducto + "). Aún está en carritos activos."
+            );
+        }
 
         producto.setEstadoProducto(false);
 

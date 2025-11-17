@@ -5,12 +5,15 @@ import com.titta.api.config.exception.ResourceNotFoundException;
 import com.titta.api.domain.model.Direccion;
 import com.titta.api.domain.model.HorarioOperacionSede;
 import com.titta.api.domain.model.Sede;
+import com.titta.api.domain.model.enums.EstadoCarritoEnum;
+import com.titta.api.domain.repository.CartRepository;
 import com.titta.api.domain.repository.SedeRepository;
 import com.titta.api.features.sede.dto.request.SedeRequestDto;
 import com.titta.api.features.sede.dto.response.SedeResponseDto;
 import com.titta.api.features.sede.mapper.SedeMapper;
 import com.titta.api.features.sede.service.SedeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,9 @@ public class SedeServiceImpl implements SedeService {
 
     @Autowired
     private SedeMapper sedeMapper;
+
+    @Autowired
+    private CartRepository cartRepository;
 
     @Override
     @Transactional
@@ -111,8 +117,13 @@ public class SedeServiceImpl implements SedeService {
         Sede sede = sedeRepository.findById(idSede)
                 .orElseThrow(() -> new ResourceNotFoundException("Sede no encontrada con ID: " + idSede));
 
-        sede.setEstado(false);
+        if (cartRepository.existsBySede_IdSedeAndEstado(idSede, EstadoCarritoEnum.ACTIVO)) {
+            throw new DataIntegrityViolationException(
+                    "No se puede desactivar la sede (ID: " + idSede + "). Aún tiene carritos activos asociados."
+            );
+        }
 
+        sede.setEstado(false);
         sedeRepository.save(sede);
     }
 }
