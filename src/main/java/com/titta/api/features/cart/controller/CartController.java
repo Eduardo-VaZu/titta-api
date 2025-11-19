@@ -49,7 +49,6 @@ public class CartController {
     @DeleteMapping("/clear")
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<CartResponseDto> clearCart() {
-        cartService.clearCart();
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(cartService.clearCart());
     }
 }

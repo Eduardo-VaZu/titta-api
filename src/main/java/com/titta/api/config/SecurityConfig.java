@@ -33,8 +33,7 @@ public class SecurityConfig {
                         .disable())
                 .cors(Customizer
                         .withDefaults())
-                .httpBasic(Customizer
-                        .withDefaults())
+                .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {

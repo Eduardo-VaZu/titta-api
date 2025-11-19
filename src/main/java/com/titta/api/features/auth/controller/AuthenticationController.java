@@ -9,6 +9,7 @@ import com.titta.api.features.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -26,6 +27,9 @@ public class AuthenticationController {
     @Autowired
     private AuthService authService;
 
+    @Value("${app.security.cookie.secure:false}")
+    private boolean secureCookie;
+
     @PostMapping("/log-in")
     public ResponseEntity<AuthLoginResponse> login(
             @RequestBody @Valid AuthLoginRequest userRequest,
@@ -34,11 +38,11 @@ public class AuthenticationController {
     }
 
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthRegisterRequest> register(
+    public ResponseEntity<AuthRegisterResponse> register(
             @RequestBody @Valid AuthRegisterRequest registerRequest,
             HttpServletResponse response) {
         AuthRegisterResponse authRegisterRequest = authService.registerUser(registerRequest, response);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(authRegisterRequest);
     }
 
     @PostMapping("/refresh-token")
@@ -61,8 +65,8 @@ public class AuthenticationController {
         ResponseCookie cookie = ResponseCookie.from("refresh_token", null)
                 .maxAge(0)
                 .httpOnly(true)
+                .secure(secureCookie)
                 .path("/api/v1/auth")
-                // .secure(true) // Descomentar en producción
                 .build();
         Map<String, String> responseBody = Map.of("message", "Logout exitoso");
         return ResponseEntity.ok()

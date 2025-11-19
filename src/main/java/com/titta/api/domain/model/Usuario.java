@@ -41,7 +41,7 @@ public class Usuario extends Auditable {
     @Column(name = "estado_usuario", nullable = false)
     private boolean estadoUsuario;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
 
