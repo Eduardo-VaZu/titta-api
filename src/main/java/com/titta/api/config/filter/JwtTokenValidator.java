@@ -2,6 +2,7 @@ package com.titta.api.config.filter;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.titta.api.config.exception.error.ErrorResponse;
@@ -70,6 +71,11 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                 }
 
                 DecodedJWT decodedJWT = jwtUtils.validateAccessToken(jwtToken);
+
+                Claim idUsuarioClaim = jwtUtils.getSpecificClaim(decodedJWT, "IdUsuario");
+                if (!idUsuarioClaim.isMissing()) {
+                    log.debug("Solicitud autenticada para IdUsuario: {}", idUsuarioClaim.asLong());
+                }
 
                 String jti = decodedJWT.getId();
                 if (jti == null || tokenBlacklistRepository.existsById(jti)) {

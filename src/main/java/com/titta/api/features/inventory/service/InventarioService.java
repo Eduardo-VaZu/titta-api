@@ -12,4 +12,6 @@ public interface InventarioService {
 
     List<StockSedeResponseDto> listarSedeId(Long idSede);
 
+    void reducirStockPorVenta(Long idProducto, Long idSede, Integer cantidad);
+
 }

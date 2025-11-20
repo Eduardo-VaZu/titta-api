@@ -86,8 +86,7 @@ public class UserServiceImpl implements UserService {
 
         return userMapper.toUserResponseDto(usuarioActualizado);
     }
-
-
+    
     private Usuario getAuthenticatedUser() {
         String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         return usuarioRepository.findByEmail(userEmail)

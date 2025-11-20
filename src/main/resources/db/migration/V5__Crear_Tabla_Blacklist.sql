@@ -1,8 +1,3 @@
--- =================================================================
--- 6. TABLA DE BLACKLIST DE TOKENS
--- =================================================================
-
--- Entidad: TokenBlacklist
 CREATE TABLE tbl_token_blacklist
 (
     jti              VARCHAR(255) PRIMARY KEY,

@@ -21,7 +21,7 @@ public class CategoriaController {
     private CategoriaService categoriaService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAuthority('GESTIONAR_CATEGORIAS')")
     public ResponseEntity<CategoriaResponseDto> crearCategoria(
             @Valid @RequestBody CategoriaRequestDto categoriaRequestDto) {
         CategoriaResponseDto nuevaCategoria = categoriaService.crearCategoria(categoriaRequestDto);
@@ -30,9 +30,7 @@ public class CategoriaController {
                 .path("/{idCategoria}")
                 .buildAndExpand(nuevaCategoria.idCategoria())
                 .toUri();
-        return ResponseEntity
-                .created(location)
-                .body(nuevaCategoria);
+        return ResponseEntity.created(location).body(nuevaCategoria);
     }
 
     @GetMapping
@@ -41,16 +39,14 @@ public class CategoriaController {
         return ResponseEntity.ok(categoriaService.obterCategorias());
     }
 
-
     @GetMapping("/{idCategoria}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<CategoriaResponseDto> getCategoriaById(
-            @PathVariable Long idCategoria) {
+    public ResponseEntity<CategoriaResponseDto> getCategoriaById(@PathVariable Long idCategoria) {
         return ResponseEntity.ok(categoriaService.getCategoriaById(idCategoria));
     }
 
     @PutMapping("/{idCategoria}")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAuthority('GESTIONAR_CATEGORIAS')")
     public ResponseEntity<CategoriaResponseDto> updateCategoria(
             @PathVariable Long idCategoria,
             @Valid @RequestBody CategoriaRequestDto categoriaDto) {
@@ -58,9 +54,8 @@ public class CategoriaController {
     }
 
     @PutMapping("/{idCategoria}/desactivar")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<Void> deleteCategoria(
-            @PathVariable Long idCategoria) {
+    @PreAuthorize("hasAuthority('GESTIONAR_CATEGORIAS')")
+    public ResponseEntity<Void> deleteCategoria(@PathVariable Long idCategoria) {
         categoriaService.deleteCategoria(idCategoria);
         return ResponseEntity.noContent().build();
     }

@@ -15,15 +15,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admin/users")
-@PreAuthorize("hasRole('ADMINISTRADOR')")
+@PreAuthorize("hasAuthority('GESTIONAR_USUARIOS')")
 public class AdminUserController {
 
     @Autowired
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<Page<UserResponseDto>> getAllUsers(
-            @ParameterObject Pageable pageable) {
+    public ResponseEntity<Page<UserResponseDto>> getAllUsers(@ParameterObject Pageable pageable) {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 

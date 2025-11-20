@@ -88,16 +88,6 @@ public class AuthServiceImpl implements AuthService {
         usuario.setCredencialTradicional(credencial);
 
         usuarioRepository.save(usuario);
-//
-//        Authentication authentication = new UsernamePasswordAuthenticationToken(
-//                usuarioCreado.getEmail(), null,
-//                Arrays.asList(new SimpleGrantedAuthority("ROLE_".concat(usuarioCreado.getRol().getNombreRol().name())))
-//        );
-//
-//        String accessToken = this.jwtUtils.createAccessToken(authentication);
-//        String refreshToken = this.jwtUtils.createRefreshToken(authentication);
-//
-//        response.addCookie(createRefreshTokenCookie(refreshToken));
 
         return AuthRegisterResponse.builder()
                 .message("Usuario registrado exitosamente")
@@ -112,9 +102,6 @@ public class AuthServiceImpl implements AuthService {
                         authLoginRequest.username(),
                         authLoginRequest.password())
         );
-
-//        Usuario usuario = usuarioRepository.findByEmail(authLoginRequest.username())
-//                .orElseThrow(() -> new UsernameNotFoundException("El usuario " + authLoginRequest.username() + " no existe."));
 
         Usuario usuarioClain = buildUsuarioClain(authLoginRequest.username());
 
@@ -139,6 +126,9 @@ public class AuthServiceImpl implements AuthService {
     public RefreshTokenResponse refreshAccessToken(String refreshToken, HttpServletResponse response) {
         try {
             DecodedJWT decodedJWT = jwtUtils.validateRefreshToken(refreshToken);
+
+            log.debug("Claims del refresh token: {}", jwtUtils.returnAllClaims(decodedJWT));
+
             String username = jwtUtils.extractUserName(decodedJWT);
             String jti = jwtUtils.extractJti(decodedJWT);
 
@@ -206,7 +196,7 @@ public class AuthServiceImpl implements AuthService {
                         .jti(jti)
                         .fechaExpiracion(expiracion)
                         .build();
-                
+
                 tokenBlacklistRepository.save(tokenBlacklist);
                 log.info("Access Token (JTI: {}) añadido a la blacklist (logout).", jti);
 

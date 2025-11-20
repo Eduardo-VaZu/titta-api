@@ -18,21 +18,20 @@ public class CartController {
     private CartService cartService;
 
     @PostMapping("/add")
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAuthority('USAR_CARRITO')")
     public ResponseEntity<CartResponseDto> addItemToCart(
             @Valid @RequestBody AddToCartRequestDto requestDto) {
         return ResponseEntity.ok(cartService.addItemToCart(requestDto));
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAuthority('USAR_CARRITO')")
     public ResponseEntity<CartResponseDto> getActiveCart() {
-        CartResponseDto cartResponse = cartService.getActiveCart();
-        return ResponseEntity.ok(cartResponse);
+        return ResponseEntity.ok(cartService.getActiveCart());
     }
 
     @PutMapping("/item/{idProducto}")
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAuthority('USAR_CARRITO')")
     public ResponseEntity<CartResponseDto> updateItemQuantity(
             @PathVariable Long idProducto,
             @Valid @RequestBody UpdateCartItemRequestDto requestDto) {
@@ -40,14 +39,13 @@ public class CartController {
     }
 
     @DeleteMapping("/item/{idProducto}")
-    @PreAuthorize("hasRole('CLIENTE')")
-    public ResponseEntity<CartResponseDto> removeItemFromCart(
-            @PathVariable Long idProducto) {
+    @PreAuthorize("hasAuthority('USAR_CARRITO')")
+    public ResponseEntity<CartResponseDto> removeItemFromCart(@PathVariable Long idProducto) {
         return ResponseEntity.ok(cartService.removeItemFromCart(idProducto));
     }
 
     @DeleteMapping("/clear")
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasAuthority('USAR_CARRITO')")
     public ResponseEntity<CartResponseDto> clearCart() {
         return ResponseEntity.ok(cartService.clearCart());
     }

@@ -23,7 +23,7 @@ public class SedeController {
     private SedeService sedeService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAuthority('GESTIONAR_SEDES')")
     public ResponseEntity<SedeResponseDto> createSede(
             @Valid @RequestBody SedeRequestDto sedeRequestDto) {
         SedeResponseDto nuevaSede = sedeService.crearSede(sedeRequestDto);
@@ -32,9 +32,7 @@ public class SedeController {
                 .path("/{idSede}")
                 .buildAndExpand(nuevaSede.idSede())
                 .toUri();
-        return ResponseEntity
-                .created(location)
-                .body(nuevaSede);
+        return ResponseEntity.created(location).body(nuevaSede);
     }
 
     @GetMapping
@@ -47,13 +45,12 @@ public class SedeController {
 
     @GetMapping("/{idSede}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<SedeResponseDto> getSedeById(
-            @PathVariable Long idSede) {
+    public ResponseEntity<SedeResponseDto> getSedeById(@PathVariable Long idSede) {
         return ResponseEntity.ok(sedeService.getSedeById(idSede));
     }
 
     @PutMapping("/{idSede}")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAuthority('GESTIONAR_SEDES')")
     public ResponseEntity<SedeResponseDto> updateSede(
             @PathVariable Long idSede,
             @Valid @RequestBody SedeRequestDto sedeDto) {
@@ -61,9 +58,8 @@ public class SedeController {
     }
 
     @PutMapping("/{idSede}/desactivar")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<Void> deleteSede(
-            @PathVariable Long idSede) {
+    @PreAuthorize("hasAuthority('GESTIONAR_SEDES')")
+    public ResponseEntity<Void> deleteSede(@PathVariable Long idSede) {
         sedeService.deleteSede(idSede);
         return ResponseEntity.noContent().build();
     }

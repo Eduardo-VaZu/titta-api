@@ -57,4 +57,7 @@ public class Venta extends Auditable {
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     private Set<DetalleVenta> detalles = new HashSet<>();
+
+    @Column(name = "id_transaccion")
+    private String idTransaccion;
 }

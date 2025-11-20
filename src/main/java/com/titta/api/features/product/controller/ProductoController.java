@@ -27,7 +27,7 @@ public class ProductoController {
     private ProductoService productoService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAuthority('GESTIONAR_PRODUCTOS')")
     public ResponseEntity<ProductoResponseDto> crearProducto(
             @Valid @RequestBody ProductoRequestDto requestDto) {
         ProductoResponseDto nuevoProducto = productoService.crearProducto(requestDto);
@@ -36,17 +36,13 @@ public class ProductoController {
                 .path("/{idProducto}")
                 .buildAndExpand(nuevoProducto.idProducto())
                 .toUri();
-        return ResponseEntity
-                .created(location)
-                .body(nuevoProducto);
+        return ResponseEntity.created(location).body(nuevoProducto);
     }
 
     @GetMapping("/{idProducto}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<ProductoResponseDto> getProductoById(
-            @PathVariable Long idProducto) {
-        ProductoResponseDto producto = productoService.getProductoById(idProducto);
-        return ResponseEntity.ok(producto);
+    public ResponseEntity<ProductoResponseDto> getProductoById(@PathVariable Long idProducto) {
+        return ResponseEntity.ok(productoService.getProductoById(idProducto));
     }
 
     @GetMapping
@@ -54,33 +50,29 @@ public class ProductoController {
     public ResponseEntity<Page<ProductoResponseDto>> getAllProductos(
             @RequestParam(required = false) Boolean estado,
             @ParameterObject Pageable pageable) {
-        Page<ProductoResponseDto> productosPage = productoService.getAllProductos(estado, pageable);
-        return ResponseEntity.ok(productosPage);
+        return ResponseEntity.ok(productoService.getAllProductos(estado, pageable));
     }
 
     @PutMapping("/{idProducto}")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAuthority('GESTIONAR_PRODUCTOS')")
     public ResponseEntity<ProductoResponseDto> updateProducto(
             @PathVariable Long idProducto,
             @Valid @RequestBody ProductoUpdateDto updateDto) {
-        ProductoResponseDto producto = productoService.updateProducto(idProducto, updateDto);
-        return ResponseEntity.ok(producto);
+        return ResponseEntity.ok(productoService.updateProducto(idProducto, updateDto));
     }
 
     @PutMapping("/{idProducto}/desactivar")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public ResponseEntity<Void> deleteProducto(
-            @PathVariable Long idProducto) {
+    @PreAuthorize("hasAuthority('GESTIONAR_PRODUCTOS')")
+    public ResponseEntity<Void> deleteProducto(@PathVariable Long idProducto) {
         productoService.deleteProducto(idProducto);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/batch")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @PreAuthorize("hasAuthority('GESTIONAR_PRODUCTOS')")
     public ResponseEntity<List<ProductoResponseDto>> crearProductosBatch(
             @Valid @RequestBody ProductoBatchRequestDto batchRequestDto) {
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(productoService.crearProductosBatch(batchRequestDto));
     }
 }

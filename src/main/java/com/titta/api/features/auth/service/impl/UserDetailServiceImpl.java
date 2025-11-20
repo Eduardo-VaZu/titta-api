@@ -1,5 +1,6 @@
 package com.titta.api.features.auth.service.impl;
 
+import com.titta.api.domain.model.Permiso;
 import com.titta.api.domain.model.Usuario;
 import com.titta.api.domain.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,12 @@ public class UserDetailServiceImpl implements UserDetailsService {
         List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
         authorityList.add(new SimpleGrantedAuthority("ROLE_".concat(usuario.getRol().getNombreRol().name())));
 
+        if (usuario.getRol().getPermisos() != null) {
+            for (Permiso permiso : usuario.getRol().getPermisos()) {
+                authorityList.add(new SimpleGrantedAuthority(permiso.getNombre()));
+            }
+        }
+
         if (usuario.getCredencialTradicional() == null) {
             throw new UsernameNotFoundException("El usuario no tiene credenciales tradicionales.");
         }
@@ -35,7 +42,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (!usuario.isEstadoUsuario()) {
             throw new DisabledException("La cuenta está deshabilitada. Contacta al administrador.");
         }
-        
+
         return new User(
                 usuario.getEmail(),
                 usuario.getCredencialTradicional().getPasswordHash(),

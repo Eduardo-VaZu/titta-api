@@ -19,7 +19,7 @@ public class InventarioController {
     private InventarioService inventarioService;
 
     @PostMapping("/producto/{idProducto}/sede/{idSede}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'EMPLEADO')")
+    @PreAuthorize("hasAuthority('AJUSTAR_INVENTARIO')")
     public ResponseEntity<StockSedeResponseDto> ajustarStock(
             @PathVariable Long idProducto,
             @PathVariable Long idSede,
@@ -33,8 +33,7 @@ public class InventarioController {
 
     @GetMapping("/sede/{idSede}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<StockSedeResponseDto>> listarSedeId(
-            @PathVariable Long idSede) {
+    public ResponseEntity<List<StockSedeResponseDto>> listarSedeId(@PathVariable Long idSede) {
         return ResponseEntity.ok(inventarioService.listarSedeId(idSede));
     }
 }

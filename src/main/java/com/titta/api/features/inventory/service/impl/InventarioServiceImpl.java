@@ -84,4 +84,31 @@ public class InventarioServiceImpl implements InventarioService {
                 .map(inventarioMapper::toStockSedeResponseDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public void reducirStockPorVenta(Long idProducto, Long idSede, Integer cantidad) {
+        StockSedeId id = new StockSedeId(idProducto, idSede);
+        StockSede stockSede = stockSedeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Stock no encontrado para producto " + idProducto + " en sede " + idSede));
+
+        int nuevoStock = stockSede.getCantidad() - cantidad;
+        if (nuevoStock < 0) {
+            throw new IllegalArgumentException("Stock insuficiente para el producto: " + stockSede.getProducto().getNombreProducto());
+        }
+
+        stockSede.setCantidad(nuevoStock);
+        stockSedeRepository.save(stockSede);
+
+        MovimientoInventario movimiento = MovimientoInventario.builder()
+                .producto(stockSede.getProducto())
+                .sede(stockSede.getSede())
+                .tipoMovimiento(TipoMovimientoInventario.VENTA)
+                .cantidad(cantidad)
+                .fechaMovimiento(LocalDate.now())
+                .razon("Venta realizada")
+                .build();
+
+        movimientoInventarioRepository.save(movimiento);
+    }
 }

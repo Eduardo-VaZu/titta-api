@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.titta.api.domain.model.Usuario;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -179,7 +181,7 @@ public class JwtUtils {
             log.error("DecodedJWT es nulo");
             throw new IllegalArgumentException("DecodedJWT no puede ser null");
         }
-        String username = decodedJWT.getSubject();
+        String username = decodedJWT.getSubject().toString();
         log.debug("Nombre de usuario extraído de JWT: {}", username);
         return username;
     }
@@ -204,5 +206,21 @@ public class JwtUtils {
         String jti = decodedJWT.getId();
         log.debug("JTI extraído de JWT: {}", jti);
         return jti;
+    }
+
+    public Claim getSpecificClaim(DecodedJWT decodedJWT, String claimName) {
+        if (decodedJWT == null) {
+            log.error("DecodedJWT es nulo al intentar obtener claim: {}", claimName);
+            throw new IllegalArgumentException("DecodedJWT no puede ser null");
+        }
+        return decodedJWT.getClaim(claimName);
+    }
+
+    public Map<String, Claim> returnAllClaims(DecodedJWT decodedJWT) {
+        if (decodedJWT == null) {
+            log.error("DecodedJWT es nulo al intentar obtener todos los claims");
+            throw new IllegalArgumentException("DecodedJWT no puede ser null");
+        }
+        return decodedJWT.getClaims();
     }
 }
