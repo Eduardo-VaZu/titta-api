@@ -12,21 +12,21 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class DetalleVenta {
 
     @EmbeddedId
+    @EqualsAndHashCode.Include
     private DetalleVentaId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idVenta")
     @JoinColumn(name = "id_venta")
-    @EqualsAndHashCode.Exclude
     private Venta venta;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idProducto")
     @JoinColumn(name = "id_producto")
-    @EqualsAndHashCode.Exclude
     private Producto producto;
 
     @Column(nullable = false)
@@ -35,4 +35,3 @@ public class DetalleVenta {
     @Column(name = "precio_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal precioUnitario;
 }
-

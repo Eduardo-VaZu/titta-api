@@ -12,6 +12,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode
 public class DetalleVentaId implements Serializable {
 
     @Column(name = "id_venta")
