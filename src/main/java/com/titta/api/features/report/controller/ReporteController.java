@@ -1,6 +1,6 @@
 package com.titta.api.features.report.controller;
 
-import com.titta.api.domain.model.MovimientoInventario;
+import com.titta.api.features.report.dto.MovimientoInventarioResponseDto;
 import com.titta.api.features.report.dto.ProductoBajoStockDto;
 import com.titta.api.features.report.dto.ProductoMasVendidoDto;
 import com.titta.api.features.report.service.ReporteService;
@@ -38,7 +38,7 @@ public class ReporteController {
     }
 
     @GetMapping("/movimientos")
-    public ResponseEntity<Page<MovimientoInventario>> getHistorialMovimientos(
+    public ResponseEntity<Page<MovimientoInventarioResponseDto>> getHistorialMovimientos(
             @ParameterObject Pageable pageable) {
         return ResponseEntity.ok(reporteService.obtenerHistorialMovimientos(pageable));
     }

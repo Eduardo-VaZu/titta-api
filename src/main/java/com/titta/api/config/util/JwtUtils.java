@@ -67,7 +67,14 @@ public class JwtUtils {
         log.debug("Creación de un Access Token para el usuario: {}", authentication.getPrincipal());
 
         try {
-            String username = authentication.getPrincipal().toString();
+//            Object principal = authentication.getPrincipal();
+//            String username;
+//            if (principal instanceof UserDetails) {
+//                username = ((UserDetails) principal).getUsername();
+//            } else {
+//                username = principal.toString();
+//            }
+            String username = authentication.getName();
             String authorities = authentication.getAuthorities()
                     .stream()
                     .map(GrantedAuthority::getAuthority)

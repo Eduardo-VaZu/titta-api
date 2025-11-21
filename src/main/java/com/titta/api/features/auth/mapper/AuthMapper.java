@@ -18,10 +18,10 @@ public class AuthMapper {
 
         return new AuthLoginResponse.UsuarioResponseDto(
                 usuario.getIdUsuario(),
-                usuario.getNombre(),
+                usuario.getNombre() + " " + usuario.getApellidoPaterno() + " " + usuario.getApellidoMaterno(),
                 usuario.getEmail(),
                 usuario.getRol().getNombreRol().name(),
-                usuario.isEstadoUsuario()
+                true
         );
     }
 

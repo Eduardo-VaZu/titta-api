@@ -1,8 +1,8 @@
 package com.titta.api.features.category.mapper;
 
+import com.titta.api.domain.model.Categoria;
 import com.titta.api.features.category.dto.request.CategoriaRequestDto;
 import com.titta.api.features.category.dto.response.CategoriaResponseDto;
-import com.titta.api.domain.model.Categoria;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +14,7 @@ public class CategoriaMapper {
         }
         return Categoria.builder()
                 .nombreCategoria(dto.nombreCategoria())
+                .estado(true)
                 .build();
     }
 

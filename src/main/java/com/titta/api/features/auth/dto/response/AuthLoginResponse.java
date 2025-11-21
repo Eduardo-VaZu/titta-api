@@ -14,7 +14,7 @@ public record AuthLoginResponse(
     @JsonPropertyOrder({"id", "nombre", "email", "rol", "estadoUsuario"})
     public record UsuarioResponseDto(
             Long id,
-            String nombre,
+            String fullname,
             String email,
             String rol,
             boolean estadoUsuario

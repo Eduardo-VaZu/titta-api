@@ -42,6 +42,10 @@ public class SedeServiceImpl implements SedeService {
             throw new DuplicateResourceException("Ya existe una sede con el nombre '" + sedeDto.nombreSede() + "'.");
         }
 
+        if (sedeDto.telefono() != null && sedeRepository.existsByTelefono(sedeDto.telefono())) {
+            throw new DuplicateResourceException("El teléfono '" + sedeDto.telefono() + "' ya está registrado en otra sede.");
+        }
+
         Sede sede = sedeMapper.toSede(sedeDto);
         Sede nuevaSede = sedeRepository.save(sede);
 

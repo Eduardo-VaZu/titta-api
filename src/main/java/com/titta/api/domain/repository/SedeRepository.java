@@ -23,4 +23,6 @@ public interface SedeRepository extends JpaRepository<Sede, Long> {
     @EntityGraph(attributePaths = {"direccion", "horariosOperacion"})
     @Override
     Optional<Sede> findById(Long idSede);
+
+    boolean existsByTelefono(String telefono);
 }

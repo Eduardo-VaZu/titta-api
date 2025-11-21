@@ -228,6 +228,8 @@ public class AuthServiceImpl implements AuthService {
                 .apellidoPaterno(usuario.getApellidoPaterno())
                 .apellidoMaterno(usuario.getApellidoMaterno())
                 .email(usuario.getEmail())
+                .rol(usuario.getRol())
+                .estadoUsuario(usuario.isEstadoUsuario())
                 .build();
     }
 }

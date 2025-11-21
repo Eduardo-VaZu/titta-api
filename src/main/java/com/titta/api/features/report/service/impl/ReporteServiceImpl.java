@@ -4,6 +4,7 @@ import com.titta.api.domain.model.MovimientoInventario;
 import com.titta.api.domain.repository.DetalleVentaRepository;
 import com.titta.api.domain.repository.MovimientoInventarioRepository;
 import com.titta.api.domain.repository.StockSedeRepository;
+import com.titta.api.features.report.dto.MovimientoInventarioResponseDto;
 import com.titta.api.features.report.dto.ProductoBajoStockDto;
 import com.titta.api.features.report.dto.ProductoMasVendidoDto;
 import com.titta.api.features.report.mapper.ReportMapper;
@@ -44,7 +45,10 @@ public class ReporteServiceImpl implements ReporteService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<MovimientoInventario> obtenerHistorialMovimientos(Pageable pageable) {
-        return movimientoInventarioRepository.findAll(pageable);
+    public Page<MovimientoInventarioResponseDto> obtenerHistorialMovimientos(Pageable pageable) {
+
+        Page<MovimientoInventario> movimientosPage = movimientoInventarioRepository.findAll(pageable);
+
+        return movimientosPage.map(reportMapper::toMovimientoResponseDto);
     }
 }

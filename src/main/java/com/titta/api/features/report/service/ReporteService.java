@@ -1,6 +1,6 @@
 package com.titta.api.features.report.service;
 
-import com.titta.api.domain.model.MovimientoInventario;
+import com.titta.api.features.report.dto.MovimientoInventarioResponseDto;
 import com.titta.api.features.report.dto.ProductoBajoStockDto;
 import com.titta.api.features.report.dto.ProductoMasVendidoDto;
 import org.springframework.data.domain.Page;
@@ -13,5 +13,5 @@ public interface ReporteService {
 
     List<ProductoMasVendidoDto> obtenerTopProductosVendidos(int limite);
 
-    Page<MovimientoInventario> obtenerHistorialMovimientos(Pageable pageable);
+    Page<MovimientoInventarioResponseDto> obtenerHistorialMovimientos(Pageable pageable);
 }
