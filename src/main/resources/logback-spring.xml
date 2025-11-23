@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- ===================================================================
+         PROPIEDADES DE CONFIGURACIÓN
+         =================================================================== -->
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_FILE" value="titta-api"/>
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="LOG_PATTERN_CONSOLE" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%thread] %cyan(%logger{36}) - %msg%n"/>
+
+    <!-- ===================================================================
+         APPENDER PARA CONSOLA (desarrollo)
+         =================================================================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN_CONSOLE}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ===================================================================
+         APPENDER PARA ARCHIVO DE LOG GENERAL
+         =================================================================== -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        
+        <!-- Política de rotación: diaria -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Patrón del nombre del archivo archivado -->
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            
+            <!-- Retener logs de los últimos 30 días -->
+            <maxHistory>30</maxHistory>
+            
+            <!-- Tamaño total máximo de los archivos de log (3GB) -->
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===================================================================
+         APPENDER PARA ARCHIVO DE ERRORES
+         =================================================================== -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}-error.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        
+        <!-- Solo registrar errores (ERROR y FATAL) -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        
+        <!-- Política de rotación: diaria -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-error-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ===================================================================
+         CONFIGURACIÓN POR PERFIL: DESARROLLO
+         =================================================================== -->
+    <springProfile name="dev">
+        <!-- Logs de la aplicación -->
+        <logger name="com.titta.api" level="DEBUG"/>
+        
+        <!-- Logs de Hibernate -->
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+        
+        <!-- Logs de Flyway -->
+        <logger name="org.flywaydb" level="DEBUG"/>
+        
+        <!-- Logs de Spring -->
+        <logger name="org.springframework.web" level="DEBUG"/>
+        <logger name="org.springframework.security" level="DEBUG"/>
+        
+        <!-- Root logger -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- ===================================================================
+         CONFIGURACIÓN POR PERFIL: PRODUCCIÓN
+         =================================================================== -->
+    <springProfile name="prod">
+        <!-- Logs de la aplicación -->
+        <logger name="com.titta.api" level="INFO"/>
+        
+        <!-- Logs de Hibernate -->
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        
+        <!-- Logs de Flyway -->
+        <logger name="org.flywaydb" level="INFO"/>
+        
+        <!-- Logs de Spring -->
+        <logger name="org.springframework.web" level="WARN"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        
+        <!-- Root logger -->
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- ===================================================================
+         CONFIGURACIÓN POR DEFECTO (si no hay perfil específico)
+         =================================================================== -->
+    <springProfile name="!dev &amp; !prod">
+        <logger name="com.titta.api" level="INFO"/>
+        
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+</configuration>

@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # MySQL Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: titta-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_NAME:-titta_db}
+      MYSQL_USER: ${DB_USERNAME:-titta_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - titta-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Spring Boot Application Service
+  titta-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: titta-api
+    environment:
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME:-titta_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-titta_user}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-root}
+      
+      # JWT Configuration
+      JWT_KEY_SECRET: ${JWT_KEY_SECRET}
+      JWT_USER_GENERATOR: ${JWT_USER_GENERATOR}
+      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME:-3600000}
+      JWT_REFRESH_EXPIRATION_TIME: ${JWT_REFRESH_EXPIRATION_TIME:-86400000}
+      
+      # CORS Configuration
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      
+      # Cookie Configuration
+      APP_COOKIE_SECURE: ${APP_COOKIE_SECURE:-false}
+      
+      # Stripe Configuration
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_CURRENCY: ${STRIPE_CURRENCY:-usd}
+      
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - titta-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+# Named volumes for data persistence
+volumes:
+  mysql_data:
+    driver: local
+  app_logs:
+    driver: local
+
+# Custom network for service communication
+networks:
+  titta-network:
+    driver: bridge

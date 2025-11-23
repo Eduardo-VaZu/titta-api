@@ -27,8 +27,7 @@ public class InventarioController {
         return ResponseEntity.ok(inventarioService.ajustarStock(
                 idProducto,
                 idSede,
-                stockDto
-        ));
+                stockDto));
     }
 
     @GetMapping("/sede/{idSede}")
