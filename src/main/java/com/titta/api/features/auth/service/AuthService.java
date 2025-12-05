@@ -2,18 +2,17 @@ package com.titta.api.features.auth.service;
 
 import com.titta.api.features.auth.dto.request.AuthLoginRequest;
 import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
-import com.titta.api.features.auth.dto.response.AuthLoginResponse;
 import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
-import com.titta.api.features.auth.dto.response.RefreshTokenResponse;
-import jakarta.servlet.http.HttpServletResponse;
+import com.titta.api.features.auth.dto.result.AuthLoginResult;
+import com.titta.api.features.auth.dto.result.AuthRefreshResult;
 
 public interface AuthService {
 
-    AuthRegisterResponse registerUser(AuthRegisterRequest registerRequest, HttpServletResponse response);
+    AuthRegisterResponse registerUser(AuthRegisterRequest registerRequest);
 
-    AuthLoginResponse loginUser(AuthLoginRequest authLoginRequest, HttpServletResponse response);
+    AuthLoginResult loginUser(AuthLoginRequest authLoginRequest);
 
-    RefreshTokenResponse refreshAccessToken(String refreshToken, HttpServletResponse response);
+    AuthRefreshResult refreshAccessToken(String refreshToken);
 
     void logoutUser(String refreshToken, String authorizationHeader);
 }

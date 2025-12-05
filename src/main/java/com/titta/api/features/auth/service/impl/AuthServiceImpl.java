@@ -16,11 +16,10 @@ import com.titta.api.features.auth.dto.request.AuthLoginRequest;
 import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
 import com.titta.api.features.auth.dto.response.AuthLoginResponse;
 import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
-import com.titta.api.features.auth.dto.response.RefreshTokenResponse;
+import com.titta.api.features.auth.dto.result.AuthLoginResult;
+import com.titta.api.features.auth.dto.result.AuthRefreshResult;
 import com.titta.api.features.auth.mapper.AuthMapper;
 import com.titta.api.features.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
     private boolean secureCookie;
 
     @Override
-    public AuthRegisterResponse registerUser(AuthRegisterRequest registerRequest, HttpServletResponse response) {
+    public AuthRegisterResponse registerUser(AuthRegisterRequest registerRequest) {
         if (usuarioRepository.findByEmail(registerRequest.email()).isPresent()) {
             throw new DuplicateResourceException("El correo electrónico ya está registrado.");
         }
@@ -96,12 +95,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthLoginResponse loginUser(AuthLoginRequest authLoginRequest, HttpServletResponse response) {
+    public AuthLoginResult loginUser(AuthLoginRequest authLoginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authLoginRequest.username(),
-                        authLoginRequest.password())
-        );
+                        authLoginRequest.password()));
 
         Usuario usuarioClain = buildUsuarioClain(authLoginRequest.username());
 
@@ -112,18 +110,21 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = this.jwtUtils.createAccessToken(authentication, usuarioClain);
         String refreshToken = this.jwtUtils.createRefreshToken(authentication);
 
-        response.addCookie(createRefreshTokenCookie(refreshToken));
-
-        return AuthLoginResponse.builder()
+        AuthLoginResponse loginResponse = AuthLoginResponse.builder()
                 .usuario(usuarioDto)
                 .jwt(accessToken)
                 .message("Usuario logueado exitosamente")
                 .status(true)
                 .build();
+
+        return AuthLoginResult.builder()
+                .response(loginResponse)
+                .refreshToken(refreshToken)
+                .build();
     }
 
     @Override
-    public RefreshTokenResponse refreshAccessToken(String refreshToken, HttpServletResponse response) {
+    public AuthRefreshResult refreshAccessToken(String refreshToken) {
         try {
             DecodedJWT decodedJWT = jwtUtils.validateRefreshToken(refreshToken);
 
@@ -140,17 +141,20 @@ public class AuthServiceImpl implements AuthService {
             Usuario usuarioClain = buildUsuarioClain(username);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails.getUsername(), null, userDetails.getAuthorities()
-            );
+                    userDetails.getUsername(), null, userDetails.getAuthorities());
 
             String newAccessToken = jwtUtils.createAccessToken(authentication, usuarioClain);
             String newRefreshToken = jwtUtils.createRefreshToken(authentication);
 
-            response.addCookie(createRefreshTokenCookie(newRefreshToken));
-
-            return RefreshTokenResponse.builder()
+            com.titta.api.features.auth.dto.response.RefreshTokenResponse responsePayload = com.titta.api.features.auth.dto.response.RefreshTokenResponse
+                    .builder()
                     .jwt(newAccessToken)
                     .message("Tokens refrescados exitosamente")
+                    .build();
+
+            return AuthRefreshResult.builder()
+                    .response(responsePayload)
+                    .refreshToken(newRefreshToken)
                     .build();
         } catch (Exception e) {
             log.error("Error al refrescar el token: {}", e.getMessage());
@@ -206,15 +210,6 @@ public class AuthServiceImpl implements AuthService {
                 log.warn("Intento de logout con access token inválido: {}", e.getMessage());
             }
         }
-    }
-
-    private Cookie createRefreshTokenCookie(String token) {
-        Cookie refreshTokenCookie = new Cookie("refresh_token", token);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/api/v1/auth");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-        refreshTokenCookie.setSecure(secureCookie);
-        return refreshTokenCookie;
     }
 
     private Usuario buildUsuarioClain(String username) {

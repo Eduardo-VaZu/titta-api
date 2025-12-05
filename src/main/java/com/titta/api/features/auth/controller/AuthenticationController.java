@@ -6,6 +6,7 @@ import com.titta.api.features.auth.dto.response.AuthLoginResponse;
 import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
 import com.titta.api.features.auth.dto.response.RefreshTokenResponse;
 import com.titta.api.features.auth.service.AuthService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +35,17 @@ public class AuthenticationController {
     public ResponseEntity<AuthLoginResponse> login(
             @RequestBody @Valid AuthLoginRequest userRequest,
             HttpServletResponse response) {
-        return ResponseEntity.ok(this.authService.loginUser(userRequest, response));
+        var result = this.authService.loginUser(userRequest);
+        response.addCookie(createRefreshTokenCookie(result.refreshToken()));
+        return ResponseEntity.ok(result.response());
     }
 
     @PostMapping("/sign-up")
     public ResponseEntity<AuthRegisterResponse> register(
             @RequestBody @Valid AuthRegisterRequest registerRequest,
             HttpServletResponse response) {
-        AuthRegisterResponse authRegisterRequest = authService.registerUser(registerRequest, response);
-        return ResponseEntity.status(HttpStatus.CREATED).body(authRegisterRequest);
+        AuthRegisterResponse authRegisterResponse = authService.registerUser(registerRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(authRegisterResponse);
     }
 
     @PostMapping("/refresh-token")
@@ -52,8 +55,9 @@ public class AuthenticationController {
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        RefreshTokenResponse responseBody = authService.refreshAccessToken(refreshToken, response);
-        return ResponseEntity.ok(responseBody);
+        var result = authService.refreshAccessToken(refreshToken);
+        response.addCookie(createRefreshTokenCookie(result.refreshToken()));
+        return ResponseEntity.ok(result.response());
     }
 
     @PostMapping("/logout")
@@ -72,5 +76,14 @@ public class AuthenticationController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(responseBody);
+    }
+
+    private Cookie createRefreshTokenCookie(String token) {
+        Cookie refreshTokenCookie = new Cookie("refresh_token", token);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/api/v1/auth");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+        refreshTokenCookie.setSecure(secureCookie);
+        return refreshTokenCookie;
     }
 }
