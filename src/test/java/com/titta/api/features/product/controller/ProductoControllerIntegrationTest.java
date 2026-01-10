@@ -25,6 +25,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Clase de prueba de integración para ProductoController.
  * Verifica el flujo completo de la petición HTTP, pasando por la capa de
@@ -36,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                       // HTTP.
 @ActiveProfiles("test") // Activa el perfil "test" para cargar configuraciones específicas (ej.
                         // application-test.properties).
+@Transactional
 class ProductoControllerIntegrationTest {
 
     @Autowired
