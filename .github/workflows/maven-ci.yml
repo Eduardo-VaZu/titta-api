@@ -22,7 +22,7 @@ jobs:
         cache: 'maven'
 
     - name: Ejecutar Tests con Maven
-      run: run: chmod +x mvnw 
+      run: chmod +x mvnw && ./mvnw test -Dspring.profiles.active=test -B
 
     - name: Publicar Reporte de Tests (Opcional)
       # Esto genera un resumen visual en GitHub si los tests fallan
