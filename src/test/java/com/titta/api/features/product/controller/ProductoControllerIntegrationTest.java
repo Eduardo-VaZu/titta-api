@@ -38,7 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
                       // HTTP.
 @ActiveProfiles("test") // Activa el perfil "test" para cargar configuraciones específicas (ej.
                         // application-test.properties).
-@Transactional
+@Transactional // Anotación que indica que cada método de prueba se ejecutará en una transacción
+                // que se deshace al finalizar el método. Esto asegura que la base de datos se
+                // restablezca al estado inicial entre pruebas.
 class ProductoControllerIntegrationTest {
 
     @Autowired
