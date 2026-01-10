@@ -23,11 +23,8 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // --- ERRORES DE CLIENTE (400 - 404 - 405) ---
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-        // Formatea los errores de lista a un String más limpio
         String errorMessage = ex.getBindingResult().getFieldErrors()
                 .stream()
                 .map(error -> String.format("Campo '%s': %s", error.getField(), error.getDefaultMessage()))

@@ -37,10 +37,17 @@ public class JwtUtils {
     private final JWTVerifier refreshTokenVerifier;
 
     public JwtUtils(@Value("${security.jwt.key.secret}") String privateKey,
-                    @Value("${security.jwt.user.generator}") String userGenerator) {
+            @Value("${security.jwt.user.generator}") String userGenerator) {
         if (privateKey == null || privateKey.trim().isEmpty()) {
             log.error("La clave secreta de JWT no está configurada (security.jwt.key.secret)");
             throw new IllegalArgumentException("La clave secreta de JWT no puede ser nula o vacía");
+        }
+        if (privateKey.length() < 32) {
+            log.error("La clave secreta JWT es demasiado débil. Longitud actual: {} caracteres, mínimo requerido: 32",
+                    privateKey.length());
+            throw new IllegalStateException(
+                    String.format("JWT_KEY_SECRET debe tener al menos 32 caracteres (256 bits). Longitud actual: %d",
+                            privateKey.length()));
         }
         if (userGenerator == null || userGenerator.trim().isEmpty()) {
             log.error("El generador de usuarios JWT no está configurado (security.jwt.user.generator)");
@@ -67,13 +74,13 @@ public class JwtUtils {
         log.debug("Creación de un Access Token para el usuario: {}", authentication.getPrincipal());
 
         try {
-//            Object principal = authentication.getPrincipal();
-//            String username;
-//            if (principal instanceof UserDetails) {
-//                username = ((UserDetails) principal).getUsername();
-//            } else {
-//                username = principal.toString();
-//            }
+            // Object principal = authentication.getPrincipal();
+            // String username;
+            // if (principal instanceof UserDetails) {
+            // username = ((UserDetails) principal).getUsername();
+            // } else {
+            // username = principal.toString();
+            // }
             String username = authentication.getName();
             String authorities = authentication.getAuthorities()
                     .stream()

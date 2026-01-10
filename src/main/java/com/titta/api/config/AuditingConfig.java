@@ -12,17 +12,19 @@ import java.util.Optional;
 public class AuditingConfig {
 
     @Bean
+    @SuppressWarnings("null")
     public AuditorAware<String> auditorProvider() {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-            if (authentication == null
-                    || !authentication.isAuthenticated()
-                    || authentication.getName().equals("anonymousUser")) {
+            if (authentication == null || !authentication.isAuthenticated()) {
                 return Optional.of("SISTEMA");
             }
 
-            return Optional.of(authentication.getName());
+            String username = authentication.getName();
+            if ("anonymousUser".equals(username)) {
+                return Optional.of("SISTEMA_ANONIMO");
+            }
+            return Optional.of(username);
         };
     }
 }
