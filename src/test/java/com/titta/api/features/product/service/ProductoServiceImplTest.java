@@ -34,30 +34,40 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+/**
+ * Clase de prueba unitaria para ProductoServiceImpl.
+ * Utiliza Mockito para simular el compartamiento de los repositorios y mappers,
+ * aislando la lógica de negocio del servicio.
+ */
+@ExtendWith(MockitoExtension.class) // Habilita la integración de Mockito con JUnit 5
 public class ProductoServiceImplTest {
 
-        @InjectMocks
+        @InjectMocks // Inyecta los mocks creados en la instancia de ProductoServiceImpl.
         private ProductoServiceImpl productoService;
 
-        @Mock
+        @Mock // Mock del repositorio de Productos.
         private ProductoRepository productoRepository;
 
-        @Mock
+        @Mock // Mock del repositorio de Categorías.
         private CategoriaRepository categoriaRepository;
 
-        @Mock
+        @Mock // Mock del repositorio de Sedes.
         private SedeRepository sedeRepository;
 
-        @Mock
+        @Mock // Mock del mapper para conversión de objetos.
         private ProductoMapper productoMapper;
 
-        @Mock
+        @Mock // Mock para registrar movimientos de inventario.
         private MovimientoInventarioRepository movimientoInventarioRepository;
 
-        @Mock
+        @Mock // Mock del repositorio de Carrito (si fuera necesario para otras pruebas).
         private CartRepository cartRepository;
 
+        /**
+         * Test de caso exitoso: Verifica que se pueda crear un producto correctamente
+         * cuando todos los datos son válidos y las dependencias responden
+         * correctamente.
+         */
         @Test
         @DisplayName("crearProducto debería guardar el producto cuando los datos son válidos")
         void crearProducto_Exitoso() {
@@ -136,38 +146,54 @@ public class ProductoServiceImplTest {
 
         }
 
+        /**
+         * Test de excepción: Verifica que se lance DuplicateResourceException
+         * si se intenta crear un producto con un SKU que ya existe.
+         */
         @Test
         @DisplayName("crearProducto debería lanzar DuplicateResourceException si el SKU ya existe")
         void crearProducto_SkuDuplicado() {
+                // ARRANGE
                 ProductoRequestDto requestDto = new ProductoRequestDto(
                                 "Mouse", "SKU-DUPLICADO", "Desc", BigDecimal.TEN, true, 1L,
                                 new ProductoRequestDto.ImagenRequestDto("http://dummy.url", "Alt Text"),
                                 Collections.emptyList());
 
+                // Mockear comportamiento: el SKU YA existe
                 when(productoRepository.existsBySku("SKU-DUPLICADO")).thenReturn(true);
 
+                // ACT & ASSERT: Esperar excepción
                 assertThrows(DuplicateResourceException.class, () -> {
                         productoService.crearProducto(requestDto);
                 });
 
+                // Verificar que NUNCA se intente guardar si ya existe el SKU
                 verify(productoRepository, never()).save(any());
         }
 
+        /**
+         * Test de excepción: Verifica que se lance ResourceNotFoundException
+         * si se intenta asociar un producto a una categoría que no existe en BD.
+         */
         @Test
         @DisplayName("crearProducto debería lanzar ResourceNotFoundException si la categoría no existe")
         void crearProducto_CategoriaNoExiste() {
+                // ARRANGE
                 ProductoRequestDto requestDto = new ProductoRequestDto(
                                 "Teclado", "SKU-NUEVO", "Desc", BigDecimal.TEN, true, 999L,
                                 new ProductoRequestDto.ImagenRequestDto("http://dummy.url", "Alt Text"),
                                 Collections.emptyList());
 
                 when(productoRepository.existsBySku("SKU-NUEVO")).thenReturn(false);
+                // Mockear comportamiento: la categoría NO se encuentra
                 when(categoriaRepository.findById(999L)).thenReturn(Optional.empty());
 
+                // ACT & ASSERT: Esperar excepción
                 assertThrows(ResourceNotFoundException.class, () -> {
                         productoService.crearProducto(requestDto);
                 });
 
+                // Verificar que NUNCA se intente guardar sin categoría válida
                 verify(productoRepository, never()).save(any());
         }
 }
