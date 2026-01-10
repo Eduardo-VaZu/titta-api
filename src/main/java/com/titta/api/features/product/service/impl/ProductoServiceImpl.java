@@ -13,6 +13,8 @@ import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import com.titta.api.features.product.mapper.ProductoMapper;
 import com.titta.api.features.product.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +48,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional
+        @CacheEvict(value = "productos", allEntries = true)
         public ProductoResponseDto crearProducto(ProductoRequestDto requestDto) {
 
                 if (productoRepository.existsBySku(requestDto.sku())) {
@@ -93,6 +96,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional(readOnly = true)
+        @Cacheable(value = "productos", key = "#idProducto")
         public ProductoResponseDto getProductoById(Long idProducto) {
                 Producto producto = productoRepository.findById(idProducto)
                                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -103,6 +107,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional(readOnly = true)
+        @Cacheable(value = "productos")
         public Page<ProductoResponseDto> getAllProductos(Boolean soloActivos, Pageable pageable) {
                 Page<Producto> productosPage = (soloActivos != null)
                                 ? productoRepository.findByEstadoProducto(soloActivos, pageable)
@@ -113,6 +118,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional
+        @CacheEvict(value = { "producto", "productos" }, allEntries = true)
         public ProductoResponseDto updateProducto(Long idProducto, ProductoUpdateDto updateDto) {
                 Producto producto = productoRepository.findById(idProducto)
                                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -134,6 +140,7 @@ public class ProductoServiceImpl implements ProductoService {
 
         @Override
         @Transactional
+        @CacheEvict(value = { "producto", "productos" }, allEntries = true)
         public void deleteProducto(Long idProducto) {
                 Producto producto = productoRepository.findById(idProducto)
                                 .orElseThrow(() -> new ResourceNotFoundException(
