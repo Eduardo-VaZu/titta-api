@@ -43,3 +43,4 @@ logs/
 application-*.properties
 !application-dev.properties.example
 !application-prod.properties.example
+!src/test/resources/application-test.properties
