@@ -21,6 +21,9 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
+    - name: Dar permisos de ejecución a mvnw
+      run: chmod +x mvnw
+
     - name: Ejecutar Tests con Maven
       # Ejecuta los tests usando el perfil "test" que definimos antes
       # -B: Batch mode (menos logs ruidosos de descarga)
