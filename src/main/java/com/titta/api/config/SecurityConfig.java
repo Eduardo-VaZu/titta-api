@@ -21,64 +21,83 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private TokenBlacklistRepository tokenBlacklistRepository;
+        @Autowired
+        private JwtUtils jwtUtils;
+        @Autowired
+        private TokenBlacklistRepository tokenBlacklistRepository;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, ObjectMapper objectMapper) throws Exception {
-        return httpSecurity
-                .csrf(csrf -> csrf
-                        .disable())
-                .cors(Customizer
-                        .withDefaults())
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, ObjectMapper objectMapper)
+                        throws Exception {
+                return httpSecurity
+                                .csrf(csrf -> csrf
+                                                .disable())
+                                .cors(Customizer
+                                                .withDefaults())
+                                .httpBasic(httpBasic -> httpBasic.disable())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(auth -> {
 
-                    auth.requestMatchers("/api/v1/auth/**").permitAll();
-                    auth.requestMatchers("/v3/api-docs/**").permitAll();
-                    auth.requestMatchers("/swagger-ui.html").permitAll();
-                    auth.requestMatchers("/swagger-ui/**").permitAll();
+                                        auth.requestMatchers("/api/v1/auth/**").permitAll();
+                                        auth.requestMatchers(
+                                                        "/swagger-ui/**",
+                                                        "/swagger-ui.html",
+                                                        "/v3/api-docs/**",
+                                                        "/swagger-resources/**",
+                                                        "/webjars/**").permitAll();
 
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/categorias/**").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/inventario/sede/**").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/productos/**").permitAll();
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/sedes/**").permitAll();
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/categorias/**").permitAll();
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/inventario/sede/**").permitAll();
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/productos/**").permitAll();
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/sedes/**").permitAll();
 
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated();
+                                        auth.requestMatchers(HttpMethod.PUT, "/api/v1/users/me").authenticated();
 
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/users/me").authenticated();
-                    auth.requestMatchers(HttpMethod.PUT, "/api/v1/users/me").authenticated();
+                                        auth.requestMatchers("/api/v1/admin/users/**").hasRole("ADMINISTRADOR");
 
-                    auth.requestMatchers("/api/v1/admin/users/**").hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/categorias")
+                                                        .hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.PUT, "/api/v1/categorias/**")
+                                                        .hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.PUT,
+                                                        "/api/v1/categorias/{idCategoria}/desactivar")
+                                                        .hasRole("ADMINISTRADOR");
 
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/categorias").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/v1/categorias/**").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/v1/categorias/{idCategoria}/desactivar").hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/productos")
+                                                        .hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/productos/batch")
+                                                        .hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.PUT, "/api/v1/productos/**")
+                                                        .hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.PUT,
+                                                        "/api/v1/productos/{idProducto}/desactivar")
+                                                        .hasRole("ADMINISTRADOR");
 
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/productos").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/productos/batch").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/v1/productos/**").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/v1/productos/{idProducto}/desactivar").hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/sedes").hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.PUT, "/api/v1/sedes/**")
+                                                        .hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.PUT, "/api/v1/sedes/{idSede}/desactivar")
+                                                        .hasRole("ADMINISTRADOR");
 
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/sedes").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/v1/sedes/**").hasRole("ADMINISTRADOR");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/v1/sedes/{idSede}/desactivar").hasRole("ADMINISTRADOR");
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/inventario/producto/**")
+                                                        .hasAnyRole("ADMINISTRADOR", "EMPLEADO");
 
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/inventario/producto/**")
-                            .hasAnyRole("ADMINISTRADOR", "EMPLEADO");
+                                        auth.requestMatchers(HttpMethod.GET, "/api/v1/cart").hasRole("CLIENTE");
+                                        auth.requestMatchers(HttpMethod.POST, "/api/v1/cart/add").hasRole("CLIENTE");
+                                        auth.requestMatchers(HttpMethod.PUT, "/api/v1/cart/item/{idProducto}")
+                                                        .hasRole("CLIENTE");
+                                        auth.requestMatchers(HttpMethod.DELETE, "/api/v1/cart/item/{idProducto}")
+                                                        .hasRole("CLIENTE");
+                                        auth.requestMatchers(HttpMethod.DELETE, "/api/v1/cart/clear")
+                                                        .hasRole("CLIENTE");
 
-                    auth.requestMatchers(HttpMethod.GET, "/api/v1/cart").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.POST, "/api/v1/cart/add").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.PUT, "/api/v1/cart/item/{idProducto}").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/v1/cart/item/{idProducto}").hasRole("CLIENTE");
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/v1/cart/clear").hasRole("CLIENTE");
-
-                    auth.anyRequest().authenticated();
-                })
-                .addFilterBefore(new JwtTokenValidator(jwtUtils, objectMapper, tokenBlacklistRepository), BasicAuthenticationFilter.class)
-                .build();
-    }
+                                        auth.anyRequest().authenticated();
+                                })
+                                .addFilterBefore(
+                                                new JwtTokenValidator(jwtUtils, objectMapper, tokenBlacklistRepository),
+                                                BasicAuthenticationFilter.class)
+                                .build();
+        }
 }
