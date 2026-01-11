@@ -34,74 +34,74 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JwtUtils jwtUtils;
-    private final UsuarioRepository usuarioRepository;
+        private final JwtUtils jwtUtils;
+        private final UsuarioRepository usuarioRepository;
 
-    @Value("${app.oauth2.redirect-uri:http://localhost:4200/login}")
-    private String redirectUri;
+        @Value("${app.oauth2.redirect-uri:http://localhost:4200/login}")
+        private String redirectUri;
 
-    @Override
-    @Transactional
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-            Authentication authentication) throws IOException, ServletException {
+        @Override
+        @Transactional
+        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                        Authentication authentication) throws IOException, ServletException {
 
-        // 1. Obtener el email del usuario desde Google (OAuth2AuthenticationToken)
-        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-        String email = oauthToken.getPrincipal().getAttribute("email");
+                // 1. Obtener el email del usuario desde Google (OAuth2AuthenticationToken)
+                OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+                String email = oauthToken.getPrincipal().getAttribute("email");
 
-        log.info("Procesando login OAuth2 exitoso para el email: {}", email);
+                log.info("Procesando login OAuth2 exitoso para el email: {}", email);
 
-        // 2. Buscar al usuario en nuestra base de datos local
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+                // 2. Buscar al usuario en nuestra base de datos local
+                Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
 
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
+                if (usuarioOpt.isPresent()) {
+                        Usuario usuario = usuarioOpt.get();
 
-            // 3. Convertir los roles y permisos del usuario a Authorities de Spring
-            // Security
-            // Esto es necesario porque tu JwtUtils extrae los roles desde el objeto
-            // Authentication
-            List<SimpleGrantedAuthority> authorities = usuario.getRol().getPermisos().stream()
-                    .map(permiso -> new SimpleGrantedAuthority(permiso.getNombre()))
-                    .collect(Collectors.toList());
+                        // 3. Convertir los roles y permisos del usuario a Authorities de Spring
+                        // Security
+                        // Esto es necesario porque tu JwtUtils extrae los roles desde el objeto
+                        // Authentication
+                        List<SimpleGrantedAuthority> authorities = usuario.getRol().getPermisos().stream()
+                                        .map(permiso -> new SimpleGrantedAuthority(permiso.getNombre()))
+                                        .collect(Collectors.toList());
 
-            // Agregamos también el rol principal (ej. ROLE_ADMIN)
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().getNombreRol().name()));
+                        // Agregamos también el rol principal (ej. ROLE_ADMIN)
+                        authorities.add(new SimpleGrantedAuthority("ROLE_" + usuario.getRol().getNombreRol().name()));
 
-            // 4. Crear una autenticación interna (appAuth) que JwtUtils pueda entender
-            // Usamos el email como "principal" (username)
-            Authentication appAuth = new UsernamePasswordAuthenticationToken(
-                    usuario.getEmail(),
-                    null,
-                    authorities);
+                        // 4. Crear una autenticación interna (appAuth) que JwtUtils pueda entender
+                        // Usamos el email como "principal" (username)
+                        Authentication appAuth = new UsernamePasswordAuthenticationToken(
+                                        usuario.getEmail(),
+                                        null,
+                                        authorities);
 
-            // 5. Generar el Access Token usando tu JwtUtils actualizado
-            // Ahora pasamos 'appAuth' (con roles) y 'usuario' (con datos personales como
-            // ID, nombre, etc.)
-            String accessToken = jwtUtils.createAccessToken(appAuth, usuario);
+                        // 5. Generar el Access Token usando tu JwtUtils actualizado
+                        // Ahora pasamos 'appAuth' (con roles) y 'usuario' (con datos personales como
+                        // ID, nombre, etc.)
+                        String accessToken = jwtUtils.createAccessToken(appAuth, usuario);
 
-            // Opcional: Generar Refresh Token si lo necesitas en la URL
-            String refreshToken = jwtUtils.createRefreshToken(appAuth);
+                        // Opcional: Generar Refresh Token si lo necesitas en la URL
+                        String refreshToken = jwtUtils.createRefreshToken(appAuth);
 
-            log.info("Tokens generados correctamente para usuario: {}", email);
+                        log.info("Tokens generados correctamente para usuario: {}", email);
 
-            // 6. Redirigir al frontend con los tokens en la URL
-            String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
-                    .queryParam("token", accessToken)
-                    .queryParam("refresh_token", refreshToken)
-                    .build().toUriString();
+                        // 6. Redirigir al frontend con los tokens en la URL
+                        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                                        .queryParam("token", accessToken)
+                                        .queryParam("refresh_token", refreshToken)
+                                        .build().toUriString();
 
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
-        } else {
-            log.warn("El email {} no existe en la base de datos local.", email);
+                        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+                } else {
+                        log.warn("El email {} no existe en la base de datos local.", email);
 
-            // Redirigir con error si el usuario no está registrado
-            String errorUrl = UriComponentsBuilder.fromUriString(redirectUri)
-                    .queryParam("error", "usuario_no_encontrado")
-                    .queryParam("email", email)
-                    .build().toUriString();
+                        // Redirigir con error si el usuario no está registrado
+                        String errorUrl = UriComponentsBuilder.fromUriString(redirectUri)
+                                        .queryParam("error", "usuario_no_encontrado")
+                                        .queryParam("email", email)
+                                        .build().toUriString();
 
-            getRedirectStrategy().sendRedirect(request, response, errorUrl);
+                        getRedirectStrategy().sendRedirect(request, response, errorUrl);
+                }
         }
-    }
 }
