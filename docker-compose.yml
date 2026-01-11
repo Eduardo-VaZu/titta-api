@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MySQL Database Service
   mysql:
@@ -17,19 +15,20 @@ services:
     networks:
       - titta-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
     restart: unless-stopped
-  
+
   # Redis Service
   redis:
     image: redis:alpine
     container_name: titta-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-secret}
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -47,25 +46,30 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME:-titta_db}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-titta_user}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-root}
-      
+
       # JWT Configuration
       JWT_KEY_SECRET: ${JWT_KEY_SECRET}
       JWT_USER_GENERATOR: ${JWT_USER_GENERATOR}
       JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME:-3600000}
       JWT_REFRESH_EXPIRATION_TIME: ${JWT_REFRESH_EXPIRATION_TIME:-86400000}
-      
+
       # CORS Configuration
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
-      
+
       # Cookie Configuration
       APP_COOKIE_SECURE: ${APP_COOKIE_SECURE:-false}
-      
+
       # Stripe Configuration
       STRIPE_API_KEY: ${STRIPE_API_KEY}
       STRIPE_CURRENCY: ${STRIPE_CURRENCY:-usd}
-      
+
       # Spring Profile
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+
+      # Redis Configuration
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST:-redis}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT:-6379}
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-secret}
     ports:
       - "8080:8080"
     volumes:
@@ -77,7 +81,7 @@ services:
       - titta-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -86,6 +90,8 @@ services:
 # Named volumes for data persistence
 volumes:
   mysql_data:
+    driver: local
+  redis_data:
     driver: local
   app_logs:
     driver: local
