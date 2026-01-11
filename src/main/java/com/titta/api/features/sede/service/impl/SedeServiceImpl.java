@@ -12,7 +12,9 @@ import com.titta.api.features.sede.dto.request.SedeRequestDto;
 import com.titta.api.features.sede.dto.response.SedeResponseDto;
 import com.titta.api.features.sede.mapper.SedeMapper;
 import com.titta.api.features.sede.service.SedeService;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,16 +26,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SedeServiceImpl implements SedeService {
 
-    @Autowired
-    private SedeRepository sedeRepository;
-
-    @Autowired
-    private SedeMapper sedeMapper;
-
-    @Autowired
-    private CartRepository cartRepository;
+    private final SedeRepository sedeRepository;
+    private final SedeMapper sedeMapper;
+    private final CartRepository cartRepository;
 
     @Override
     @Transactional
@@ -43,7 +41,8 @@ public class SedeServiceImpl implements SedeService {
         }
 
         if (sedeDto.telefono() != null && sedeRepository.existsByTelefono(sedeDto.telefono())) {
-            throw new DuplicateResourceException("El teléfono '" + sedeDto.telefono() + "' ya está registrado en otra sede.");
+            throw new DuplicateResourceException(
+                    "El teléfono '" + sedeDto.telefono() + "' ya está registrado en otra sede.");
         }
 
         Sede sede = sedeMapper.toSede(sedeDto);
@@ -81,7 +80,8 @@ public class SedeServiceImpl implements SedeService {
         if (!sede.getNombreSede().equals(sedeDto.nombreSede())) {
             Optional<Sede> otraSedeConMismoNombre = sedeRepository.findByNombreSede(sedeDto.nombreSede());
             if (otraSedeConMismoNombre.isPresent()) {
-                throw new DuplicateResourceException("El nombre '" + sedeDto.nombreSede() + "' ya está en uso por otra sede.");
+                throw new DuplicateResourceException(
+                        "El nombre '" + sedeDto.nombreSede() + "' ya está en uso por otra sede.");
             }
         }
 
@@ -123,8 +123,7 @@ public class SedeServiceImpl implements SedeService {
 
         if (cartRepository.existsBySede_IdSedeAndEstado(idSede, EstadoCarritoEnum.ACTIVO)) {
             throw new DataIntegrityViolationException(
-                    "No se puede desactivar la sede (ID: " + idSede + "). Aún tiene carritos activos asociados."
-            );
+                    "No se puede desactivar la sede (ID: " + idSede + "). Aún tiene carritos activos asociados.");
         }
 
         sede.setEstado(false);

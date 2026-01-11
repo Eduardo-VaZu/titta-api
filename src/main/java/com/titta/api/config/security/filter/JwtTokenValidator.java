@@ -1,4 +1,4 @@
-package com.titta.api.config.filter;
+package com.titta.api.config.security.filter;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
@@ -6,7 +6,7 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.titta.api.config.exception.error.ErrorResponse;
-import com.titta.api.config.util.JwtUtils;
+import com.titta.api.config.security.jwt.JwtUtils;
 import com.titta.api.domain.repository.TokenBlacklistRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +20,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,8 +37,7 @@ public class JwtTokenValidator extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final TokenBlacklistRepository tokenBlacklistRepository;
 
-    public JwtTokenValidator(JwtUtils jwtUtils, ObjectMapper objectMapper,
-            TokenBlacklistRepository tokenBlacklistRepository) {
+    public JwtTokenValidator(JwtUtils jwtUtils, ObjectMapper objectMapper, TokenBlacklistRepository tokenBlacklistRepository) {
         this.jwtUtils = jwtUtils;
         this.objectMapper = objectMapper;
         this.tokenBlacklistRepository = tokenBlacklistRepository;

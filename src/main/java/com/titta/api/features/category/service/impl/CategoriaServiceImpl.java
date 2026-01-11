@@ -8,7 +8,7 @@ import com.titta.api.features.category.dto.request.CategoriaRequestDto;
 import com.titta.api.features.category.dto.response.CategoriaResponseDto;
 import com.titta.api.features.category.mapper.CategoriaMapper;
 import com.titta.api.features.category.service.CategoriaService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,20 +18,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CategoriaServiceImpl implements CategoriaService {
 
-    @Autowired
-    private CategoriaRepository categoriaRepository;
-
-    @Autowired
-    private CategoriaMapper categoriaMapper;
+    private final CategoriaRepository categoriaRepository;
+    private final CategoriaMapper categoriaMapper;
 
     @Override
     @Transactional
     public CategoriaResponseDto crearCategoria(CategoriaRequestDto categoriaDto) {
 
         if (categoriaRepository.existsByNombreCategoria(categoriaDto.nombreCategoria())) {
-            throw new DuplicateResourceException("Ya existe una categoría con el nombre '" + categoriaDto.nombreCategoria() + "'.");
+            throw new DuplicateResourceException(
+                    "Ya existe una categoría con el nombre '" + categoriaDto.nombreCategoria() + "'.");
         }
 
         Categoria categoria = categoriaMapper.toCategoria(categoriaDto);
@@ -69,7 +68,8 @@ public class CategoriaServiceImpl implements CategoriaService {
 
         Optional<Categoria> categoriaConMismoNombre = categoriaRepository.findByNombreCategoria(nuevoNombre);
 
-        if (categoriaConMismoNombre.isPresent() && !categoriaConMismoNombre.get().getIdCategoria().equals(idCategoria)) {
+        if (categoriaConMismoNombre.isPresent()
+                && !categoriaConMismoNombre.get().getIdCategoria().equals(idCategoria)) {
             throw new DuplicateResourceException("Ya existe otra categoría con el nombre '" + nuevoNombre + "'.");
         }
 
@@ -87,7 +87,8 @@ public class CategoriaServiceImpl implements CategoriaService {
                 .orElseThrow(() -> new ResourceNotFoundException("No se encontró la categoría con ID: " + idCategoria));
 
         if (!categoria.getProductos().isEmpty()) {
-            throw new DataIntegrityViolationException("No se puede desactivar la categoría (ID: " + idCategoria + "). Aún tiene productos asociados.");
+            throw new DataIntegrityViolationException(
+                    "No se puede desactivar la categoría (ID: " + idCategoria + "). Aún tiene productos asociados.");
         }
 
         categoria.setEstado(false);

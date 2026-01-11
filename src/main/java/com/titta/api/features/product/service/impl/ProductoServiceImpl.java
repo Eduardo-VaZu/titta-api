@@ -12,7 +12,7 @@ import com.titta.api.features.product.dto.request.ProductoUpdateDto;
 import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import com.titta.api.features.product.mapper.ProductoMapper;
 import com.titta.api.features.product.service.ProductoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,21 +30,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-
+@RequiredArgsConstructor
 public class ProductoServiceImpl implements ProductoService {
 
-        @Autowired
-        private ProductoRepository productoRepository;
-        @Autowired
-        private CategoriaRepository categoriaRepository;
-        @Autowired
-        private SedeRepository sedeRepository;
-        @Autowired
-        private ProductoMapper productoMapper;
-        @Autowired
-        private MovimientoInventarioRepository movimientoInventarioRepository;
-        @Autowired
-        private CartRepository cartRepository;
+        private final ProductoRepository productoRepository;
+        private final CategoriaRepository categoriaRepository;
+        private final SedeRepository sedeRepository;
+        private final ProductoMapper productoMapper;
+        private final MovimientoInventarioRepository movimientoInventarioRepository;
+        private final CartRepository cartRepository;
 
         @Override
         @Transactional

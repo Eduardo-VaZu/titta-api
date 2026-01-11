@@ -4,8 +4,8 @@ import com.titta.api.features.report.dto.MovimientoInventarioResponseDto;
 import com.titta.api.features.report.dto.ProductoBajoStockDto;
 import com.titta.api.features.report.dto.ProductoMasVendidoDto;
 import com.titta.api.features.report.service.ReporteService;
+import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +20,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/reportes")
 @PreAuthorize("hasAuthority('VER_REPORTES')")
+@RequiredArgsConstructor
 public class ReporteController {
 
-    @Autowired
-    private ReporteService reporteService;
+    private final ReporteService reporteService;
 
     @GetMapping("/bajo-stock")
     public ResponseEntity<List<ProductoBajoStockDto>> getProductosBajoStock(

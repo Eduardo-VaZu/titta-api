@@ -4,18 +4,19 @@ import com.titta.api.features.cart.dto.request.AddToCartRequestDto;
 import com.titta.api.features.cart.dto.request.UpdateCartItemRequestDto;
 import com.titta.api.features.cart.dto.response.CartResponseDto;
 import com.titta.api.features.cart.service.CartService;
+import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/cart")
+@RequiredArgsConstructor
 public class CartController {
 
-    @Autowired
-    private CartService cartService;
+    private final CartService cartService;
 
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('USAR_CARRITO')")

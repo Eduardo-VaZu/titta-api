@@ -1,4 +1,4 @@
-package com.titta.api.config;
+package com.titta.api.config.data;
 
 import java.time.Duration;
 

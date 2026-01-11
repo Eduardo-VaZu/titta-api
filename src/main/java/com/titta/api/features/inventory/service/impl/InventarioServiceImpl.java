@@ -11,7 +11,7 @@ import com.titta.api.features.inventory.dto.request.UpdateStockRequestDto;
 import com.titta.api.features.inventory.dto.response.StockSedeResponseDto;
 import com.titta.api.features.inventory.mapper.InventarioMapper;
 import com.titta.api.features.inventory.service.InventarioService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,18 +20,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class InventarioServiceImpl implements InventarioService {
 
-    @Autowired
-    private StockSedeRepository stockSedeRepository;
-    @Autowired
-    private MovimientoInventarioRepository movimientoInventarioRepository;
-    @Autowired
-    private ProductoRepository productoRepository;
-    @Autowired
-    private SedeRepository sedeRepository;
-    @Autowired
-    private InventarioMapper inventarioMapper;
+    private final StockSedeRepository stockSedeRepository;
+    private final MovimientoInventarioRepository movimientoInventarioRepository;
+    private final ProductoRepository productoRepository;
+    private final SedeRepository sedeRepository;
+    private final InventarioMapper inventarioMapper;
 
     @Override
     @Transactional
@@ -45,13 +41,15 @@ public class InventarioServiceImpl implements InventarioService {
 
         StockSedeId stockSedeId = new StockSedeId(idProducto, idSede);
         StockSede stockSede = stockSedeRepository.findById(stockSedeId)
-                .orElseThrow(() -> new ResourceNotFoundException("No se encontró stock para el producto " + idProducto + " en la sede " + idSede));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró stock para el producto " + idProducto + " en la sede " + idSede));
 
         int stockAntiguo = stockSede.getCantidad();
         int stockNuevo = stockAntiguo + stockDto.cantidad();
 
         if (stockNuevo < 0) {
-            throw new IllegalArgumentException("El ajuste resultaría en stock negativo (" + stockNuevo + "). Stock actual: " + stockAntiguo);
+            throw new IllegalArgumentException(
+                    "El ajuste resultaría en stock negativo (" + stockNuevo + "). Stock actual: " + stockAntiguo);
         }
         stockSede.setCantidad(stockNuevo);
         StockSede stockActualizado = stockSedeRepository.save(stockSede);
@@ -90,11 +88,13 @@ public class InventarioServiceImpl implements InventarioService {
     public void reducirStockPorVenta(Long idProducto, Long idSede, Integer cantidad) {
         StockSedeId id = new StockSedeId(idProducto, idSede);
         StockSede stockSede = stockSedeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Stock no encontrado para producto " + idProducto + " en sede " + idSede));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Stock no encontrado para producto " + idProducto + " en sede " + idSede));
 
         int nuevoStock = stockSede.getCantidad() - cantidad;
         if (nuevoStock < 0) {
-            throw new IllegalArgumentException("Stock insuficiente para el producto: " + stockSede.getProducto().getNombreProducto());
+            throw new IllegalArgumentException(
+                    "Stock insuficiente para el producto: " + stockSede.getProducto().getNombreProducto());
         }
 
         stockSede.setCantidad(nuevoStock);

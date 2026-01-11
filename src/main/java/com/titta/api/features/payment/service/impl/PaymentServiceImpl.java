@@ -8,17 +8,17 @@ import com.titta.api.features.payment.dto.PaymentIntentDto;
 import com.titta.api.features.payment.mapper.PaymentMapper;
 import com.titta.api.features.payment.service.PaymentService;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-    @Autowired
-    private PaymentMapper paymentMapper;
+    private final PaymentMapper paymentMapper;
 
     @Value("${stripe.api.key}")
     private String stripeApiKey;
@@ -42,8 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .setAutomaticPaymentMethods(
                         PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
                                 .setEnabled(true)
-                                .build()
-                )
+                                .build())
                 .build();
 
         PaymentIntent paymentIntent = PaymentIntent.create(params);

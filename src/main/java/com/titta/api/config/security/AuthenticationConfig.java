@@ -1,4 +1,4 @@
-package com.titta.api.config;
+package com.titta.api.config.security;
 
 import com.titta.api.features.auth.service.impl.UserDetailServiceImpl;
 import org.springframework.context.annotation.Bean;

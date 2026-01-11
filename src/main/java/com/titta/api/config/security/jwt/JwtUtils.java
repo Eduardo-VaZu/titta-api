@@ -1,4 +1,4 @@
-package com.titta.api.config.util;
+package com.titta.api.config.security.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -23,21 +23,20 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtils {
 
-    @Value("${security.jwt.key.secret}")
-    private String privateKey;
-    @Value("${security.jwt.user.generator}")
-    private String userGenerator;
-    @Value("${security.jwt.expiration.access-token}")
-    private long jwtAccessExpirationTime;
-    @Value("${security.jwt.expiration.refresh-token}")
-    private long jwtRefreshExpirationTime;
+    private final String privateKey;
+    private final String userGenerator;
+    private final long jwtAccessExpirationTime;
+    private final long jwtRefreshExpirationTime;
 
     private final Algorithm algorithm;
     private final JWTVerifier accessTokenVerifier;
     private final JWTVerifier refreshTokenVerifier;
 
     public JwtUtils(@Value("${security.jwt.key.secret}") String privateKey,
-            @Value("${security.jwt.user.generator}") String userGenerator) {
+            @Value("${security.jwt.user.generator}") String userGenerator,
+            @Value("${security.jwt.expiration.access-token}") long jwtAccessExpirationTime,
+            @Value("${security.jwt.expiration.refresh-token}") long jwtRefreshExpirationTime) {
+
         if (privateKey == null || privateKey.trim().isEmpty()) {
             log.error("La clave secreta de JWT no está configurada (security.jwt.key.secret)");
             throw new IllegalArgumentException("La clave secreta de JWT no puede ser nula o vacía");
@@ -56,6 +55,8 @@ public class JwtUtils {
 
         this.privateKey = privateKey;
         this.userGenerator = userGenerator;
+        this.jwtAccessExpirationTime = jwtAccessExpirationTime;
+        this.jwtRefreshExpirationTime = jwtRefreshExpirationTime;
 
         log.debug("Inicializando el algoritmo HMAC256 para JWT...");
         this.algorithm = Algorithm.HMAC256(privateKey);
@@ -74,18 +75,13 @@ public class JwtUtils {
         log.debug("Creación de un Access Token para el usuario: {}", authentication.getPrincipal());
 
         try {
-            // Object principal = authentication.getPrincipal();
-            // String username;
-            // if (principal instanceof UserDetails) {
-            // username = ((UserDetails) principal).getUsername();
-            // } else {
-            // username = principal.toString();
-            // }
             String username = authentication.getName();
+
             String authorities = authentication.getAuthorities()
                     .stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.joining(","));
+
             Date issuedAt = new Date();
             Date expirationDate = new Date(issuedAt.getTime() + jwtAccessExpirationTime);
 

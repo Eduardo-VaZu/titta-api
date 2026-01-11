@@ -4,17 +4,17 @@ import com.titta.api.features.user.dto.request.UserUpdateProfileRequestDto;
 import com.titta.api.features.user.dto.response.UserResponseDto;
 import com.titta.api.features.user.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")

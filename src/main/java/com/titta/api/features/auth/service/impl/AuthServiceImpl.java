@@ -3,7 +3,7 @@ package com.titta.api.features.auth.service.impl;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.titta.api.config.exception.DuplicateResourceException;
-import com.titta.api.config.util.JwtUtils;
+import com.titta.api.config.security.jwt.JwtUtils;
 import com.titta.api.domain.model.CredencialTradicional;
 import com.titta.api.domain.model.Rol;
 import com.titta.api.domain.model.TokenBlacklist;
@@ -21,7 +21,7 @@ import com.titta.api.features.auth.dto.result.AuthRefreshResult;
 import com.titta.api.features.auth.mapper.AuthMapper;
 import com.titta.api.features.auth.service.AuthService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -32,6 +32,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -39,24 +40,17 @@ import java.time.ZoneId;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private TokenBlacklistRepository tokenBlacklistRepository;
-    @Autowired
-    private RolRepository rolRepository;
-    @Autowired
-    private AuthMapper authMapper;
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private UserDetailsService userDetailsService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final UsuarioRepository usuarioRepository;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
+    private final RolRepository rolRepository;
+    private final AuthMapper authMapper;
+    private final JwtUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
+    private final UserDetailsService userDetailsService;
+    private final AuthenticationManager authenticationManager;
 
     @Value("${app.security.cookie.secure:false}")
     private boolean secureCookie;

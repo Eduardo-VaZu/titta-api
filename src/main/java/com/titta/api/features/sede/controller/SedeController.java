@@ -3,9 +3,10 @@ package com.titta.api.features.sede.controller;
 import com.titta.api.features.sede.dto.request.SedeRequestDto;
 import com.titta.api.features.sede.dto.response.SedeResponseDto;
 import com.titta.api.features.sede.service.SedeService;
+import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +18,10 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/api/v1/sedes")
+@RequiredArgsConstructor
 public class SedeController {
 
-    @Autowired
-    private SedeService sedeService;
+    private final SedeService sedeService;
 
     @PostMapping
     @PreAuthorize("hasAuthority('GESTIONAR_SEDES')")

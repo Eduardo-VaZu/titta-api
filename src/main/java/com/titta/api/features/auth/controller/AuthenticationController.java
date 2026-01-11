@@ -9,7 +9,7 @@ import com.titta.api.features.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,10 +23,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/auth")
 @PreAuthorize("permitAll()")
+@RequiredArgsConstructor
 public class AuthenticationController {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
 
     @Value("${app.security.cookie.secure:false}")
     private boolean secureCookie;

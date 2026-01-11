@@ -7,7 +7,7 @@ import com.titta.api.features.product.dto.response.ProductoResponseDto;
 import com.titta.api.features.product.service.ProductoService;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -21,10 +21,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/productos")
+@RequiredArgsConstructor
 public class ProductoController {
 
-    @Autowired
-    private ProductoService productoService;
+    private final ProductoService productoService;
 
     @PostMapping
     @PreAuthorize("hasAuthority('GESTIONAR_PRODUCTOS')")
