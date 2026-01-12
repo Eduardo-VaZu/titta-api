@@ -104,7 +104,7 @@ public class VentaIntegrationTest {
         sedeId = sede.getIdSede();
 
         StockSede stock = new StockSede();
-        stock.setId(new StockSedeId(sedeId, productoId));
+        stock.setId(new StockSedeId(productoId, sedeId));
         stock.setSede(sede);
         stock.setProducto(producto);
         stock.setCantidad(10);
@@ -169,7 +169,7 @@ public class VentaIntegrationTest {
                 .andExpect(jsonPath("$.total").value(3000.00))
                 .andExpect(jsonPath("$.idVenta").exists());
 
-        StockSede stockActualizado = stockSedeRepository.findById(new StockSedeId(sedeId, productoId)).orElseThrow();
+        StockSede stockActualizado = stockSedeRepository.findById(new StockSedeId(productoId, sedeId)).orElseThrow();
 
         if (stockActualizado.getCantidad() != 8) {
             throw new AssertionError(
