@@ -1,0 +1,2 @@
+ALTER TABLE tbl_stock_sede
+    ADD COLUMN version BIGINT NOT NULL DEFAULT 0;

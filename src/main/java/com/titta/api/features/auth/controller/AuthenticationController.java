@@ -6,7 +6,6 @@ import com.titta.api.features.auth.dto.response.AuthLoginResponse;
 import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
 import com.titta.api.features.auth.dto.response.RefreshTokenResponse;
 import com.titta.api.features.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -25,6 +29,10 @@ import java.util.Map;
 @PreAuthorize("permitAll()")
 @RequiredArgsConstructor
 public class AuthenticationController {
+
+    private static final String REFRESH_COOKIE_NAME = "refresh_token";
+    private static final String REFRESH_COOKIE_PATH = "/api/v1/auth";
+    private static final long REFRESH_COOKIE_SECONDS = 7L * 24 * 60 * 60;
 
     private final AuthService authService;
 
@@ -35,55 +43,56 @@ public class AuthenticationController {
     public ResponseEntity<AuthLoginResponse> login(
             @RequestBody @Valid AuthLoginRequest userRequest,
             HttpServletResponse response) {
-        var result = this.authService.loginUser(userRequest);
-        response.addCookie(createRefreshTokenCookie(result.refreshToken()));
+        var result = authService.loginUser(userRequest);
+        response.addHeader(HttpHeaders.SET_COOKIE, createRefreshTokenCookie(result.refreshToken()).toString());
         return ResponseEntity.ok(result.response());
     }
 
     @PostMapping("/sign-up")
     public ResponseEntity<AuthRegisterResponse> register(
-            @RequestBody @Valid AuthRegisterRequest registerRequest,
-            HttpServletResponse response) {
+            @RequestBody @Valid AuthRegisterRequest registerRequest) {
         AuthRegisterResponse authRegisterResponse = authService.registerUser(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(authRegisterResponse);
     }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<RefreshTokenResponse> refreshToken(
-            @CookieValue(name = "refresh_token", required = false) String refreshToken,
+            @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshToken,
             HttpServletResponse response) {
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         var result = authService.refreshAccessToken(refreshToken);
-        response.addCookie(createRefreshTokenCookie(result.refreshToken()));
+        response.addHeader(HttpHeaders.SET_COOKIE, createRefreshTokenCookie(result.refreshToken()).toString());
         return ResponseEntity.ok(result.response());
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(
-            @CookieValue(name = "refresh_token", required = false) String refreshToken,
+            @CookieValue(name = REFRESH_COOKIE_NAME, required = false) String refreshToken,
             @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
         authService.logoutUser(refreshToken, authorizationHeader);
 
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", null)
+        ResponseCookie clearedCookie = ResponseCookie.from(REFRESH_COOKIE_NAME, "")
                 .maxAge(0)
                 .httpOnly(true)
                 .secure(secureCookie)
-                .path("/api/v1/auth")
+                .sameSite("Lax")
+                .path(REFRESH_COOKIE_PATH)
                 .build();
-        Map<String, String> responseBody = Map.of("message", "Logout exitoso");
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(responseBody);
+                .header(HttpHeaders.SET_COOKIE, clearedCookie.toString())
+                .body(Map.of("message", "Logout exitoso"));
     }
 
-    private Cookie createRefreshTokenCookie(String token) {
-        Cookie refreshTokenCookie = new Cookie("refresh_token", token);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/api/v1/auth");
-        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
-        refreshTokenCookie.setSecure(secureCookie);
-        return refreshTokenCookie;
+    private ResponseCookie createRefreshTokenCookie(String token) {
+        return ResponseCookie.from(REFRESH_COOKIE_NAME, token)
+                .httpOnly(true)
+                .secure(secureCookie)
+                .sameSite("Lax")
+                .path(REFRESH_COOKIE_PATH)
+                .maxAge(REFRESH_COOKIE_SECONDS)
+                .build();
     }
 }

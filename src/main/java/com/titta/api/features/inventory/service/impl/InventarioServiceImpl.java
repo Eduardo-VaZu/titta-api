@@ -1,7 +1,10 @@
 package com.titta.api.features.inventory.service.impl;
 
 import com.titta.api.config.exception.ResourceNotFoundException;
-import com.titta.api.domain.model.*;
+import com.titta.api.domain.model.MovimientoInventario;
+import com.titta.api.domain.model.Producto;
+import com.titta.api.domain.model.Sede;
+import com.titta.api.domain.model.StockSede;
 import com.titta.api.domain.model.enums.TipoMovimientoInventario;
 import com.titta.api.domain.repository.MovimientoInventarioRepository;
 import com.titta.api.domain.repository.ProductoRepository;
@@ -32,25 +35,24 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     @Transactional
     public StockSedeResponseDto ajustarStock(Long idProducto, Long idSede, UpdateStockRequestDto stockDto) {
-
         Producto producto = productoRepository.findById(idProducto)
                 .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con ID: " + idProducto));
 
         Sede sede = sedeRepository.findById(idSede)
                 .orElseThrow(() -> new ResourceNotFoundException("Sede no encontrada con ID: " + idSede));
 
-        StockSedeId stockSedeId = new StockSedeId(idProducto, idSede);
-        StockSede stockSede = stockSedeRepository.findById(stockSedeId)
+        StockSede stockSede = stockSedeRepository.findByIdForUpdate(idProducto, idSede)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "No se encontró stock para el producto " + idProducto + " en la sede " + idSede));
+                        "No se encontro stock para el producto " + idProducto + " en la sede " + idSede));
 
         int stockAntiguo = stockSede.getCantidad();
         int stockNuevo = stockAntiguo + stockDto.cantidad();
 
         if (stockNuevo < 0) {
             throw new IllegalArgumentException(
-                    "El ajuste resultaría en stock negativo (" + stockNuevo + "). Stock actual: " + stockAntiguo);
+                    "El ajuste resultaria en stock negativo (" + stockNuevo + "). Stock actual: " + stockAntiguo);
         }
+
         stockSede.setCantidad(stockNuevo);
         StockSede stockActualizado = stockSedeRepository.save(stockSede);
 
@@ -71,13 +73,11 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     @Transactional(readOnly = true)
     public List<StockSedeResponseDto> listarSedeId(Long idSede) {
-
         if (!sedeRepository.existsById(idSede)) {
             throw new ResourceNotFoundException("Sede no encontrada con ID: " + idSede);
         }
 
         List<StockSede> stocks = stockSedeRepository.findAllById_IdSede(idSede);
-
         return stocks.stream()
                 .map(inventarioMapper::toStockSedeResponseDto)
                 .collect(Collectors.toList());
@@ -86,8 +86,7 @@ public class InventarioServiceImpl implements InventarioService {
     @Override
     @Transactional
     public void reducirStockPorVenta(Long idProducto, Long idSede, Integer cantidad) {
-        StockSedeId id = new StockSedeId(idProducto, idSede);
-        StockSede stockSede = stockSedeRepository.findById(id)
+        StockSede stockSede = stockSedeRepository.findByIdForUpdate(idProducto, idSede)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Stock no encontrado para producto " + idProducto + " en sede " + idSede));
 

@@ -30,5 +30,7 @@ public class StockSede {
     @Column(name = "cantidad", nullable = false)
     private int cantidad;
 
-
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 }

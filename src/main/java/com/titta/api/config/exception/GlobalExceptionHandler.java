@@ -4,9 +4,11 @@ import com.titta.api.config.exception.error.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -102,6 +104,16 @@ public class GlobalExceptionHandler {
         }
 
         return buildResponse(HttpStatus.CONFLICT, userMessage);
+    }
+
+    @ExceptionHandler({
+            ObjectOptimisticLockingFailureException.class,
+            PessimisticLockingFailureException.class
+    })
+    public ResponseEntity<ErrorResponse> handleLockingExceptions(Exception ex) {
+        log.warn("Conflicto de concurrencia detectado: {}", ex.getMessage());
+        return buildResponse(HttpStatus.CONFLICT,
+                "El recurso fue modificado por otra operacion concurrente. Intenta nuevamente.");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

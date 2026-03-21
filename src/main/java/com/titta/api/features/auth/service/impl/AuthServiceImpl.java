@@ -16,13 +16,13 @@ import com.titta.api.features.auth.dto.request.AuthLoginRequest;
 import com.titta.api.features.auth.dto.request.AuthRegisterRequest;
 import com.titta.api.features.auth.dto.response.AuthLoginResponse;
 import com.titta.api.features.auth.dto.response.AuthRegisterResponse;
+import com.titta.api.features.auth.dto.response.RefreshTokenResponse;
 import com.titta.api.features.auth.dto.result.AuthLoginResult;
 import com.titta.api.features.auth.dto.result.AuthRefreshResult;
 import com.titta.api.features.auth.mapper.AuthMapper;
 import com.titta.api.features.auth.service.AuthService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,8 +32,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -52,17 +52,14 @@ public class AuthServiceImpl implements AuthService {
     private final UserDetailsService userDetailsService;
     private final AuthenticationManager authenticationManager;
 
-    @Value("${app.security.cookie.secure:false}")
-    private boolean secureCookie;
-
     @Override
     public AuthRegisterResponse registerUser(AuthRegisterRequest registerRequest) {
         if (usuarioRepository.findByEmail(registerRequest.email()).isPresent()) {
-            throw new DuplicateResourceException("El correo electrónico ya está registrado.");
+            throw new DuplicateResourceException("El correo electronico ya esta registrado.");
         }
 
         Rol defaultRol = rolRepository.findByNombreRol(RolEnum.CLIENTE)
-                .orElseThrow(() -> new RuntimeException("Error interno: El rol CLIENTE no se encuentra."));
+                .orElseThrow(() -> new RuntimeException("Error interno: el rol CLIENTE no se encuentra."));
 
         Usuario usuario = Usuario.builder()
                 .nombre(registerRequest.nombre())
@@ -79,7 +76,6 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         usuario.setCredencialTradicional(credencial);
-
         usuarioRepository.save(usuario);
 
         return AuthRegisterResponse.builder()
@@ -91,18 +87,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthLoginResult loginUser(AuthLoginRequest authLoginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        authLoginRequest.username(),
-                        authLoginRequest.password()));
+                new UsernamePasswordAuthenticationToken(authLoginRequest.username(), authLoginRequest.password()));
 
-        Usuario usuarioClain = buildUsuarioClain(authLoginRequest.username());
-
-        AuthLoginResponse.UsuarioResponseDto usuarioDto = authMapper.toUsuarioLoginResponseDto(usuarioClain);
+        Usuario usuarioClaim = buildUsuarioClaim(authLoginRequest.username());
+        AuthLoginResponse.UsuarioResponseDto usuarioDto = authMapper.toUsuarioLoginResponseDto(usuarioClaim);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String accessToken = this.jwtUtils.createAccessToken(authentication, usuarioClain);
-        String refreshToken = this.jwtUtils.createRefreshToken(authentication);
+        String accessToken = jwtUtils.createAccessToken(authentication, usuarioClaim);
+        String refreshToken = jwtUtils.createRefreshToken(authentication);
 
         AuthLoginResponse loginResponse = AuthLoginResponse.builder()
                 .usuario(usuarioDto)
@@ -118,30 +111,34 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthRefreshResult refreshAccessToken(String refreshToken) {
         try {
             DecodedJWT decodedJWT = jwtUtils.validateRefreshToken(refreshToken);
 
-            log.debug("Claims del refresh token: {}", jwtUtils.returnAllClaims(decodedJWT));
-
             String username = jwtUtils.extractUserName(decodedJWT);
             String jti = jwtUtils.extractJti(decodedJWT);
-
-            if (tokenBlacklistRepository.existsById(jti)) {
-                log.warn("Intento de refresco con token en blacklist (JTI: {})", jti);
-                throw new BadCredentialsException("Token inválido o expirado");
+            if (jti == null || jti.isBlank()) {
+                throw new BadCredentialsException("Refresh token invalido");
             }
 
-            Usuario usuarioClain = buildUsuarioClain(username);
+            if (tokenBlacklistRepository.existsById(jti)) {
+                log.warn("Intento de refresh con token ya invalidado. JTI={}", jti);
+                throw new BadCredentialsException("Refresh token invalido o expirado");
+            }
+
+            // Rotation one-time-use: se invalida el refresh token usado antes de emitir uno nuevo.
+            blacklistToken(jti, toLocalDateTime(decodedJWT));
+
+            Usuario usuarioClaim = buildUsuarioClaim(username);
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                     userDetails.getUsername(), null, userDetails.getAuthorities());
 
-            String newAccessToken = jwtUtils.createAccessToken(authentication, usuarioClain);
+            String newAccessToken = jwtUtils.createAccessToken(authentication, usuarioClaim);
             String newRefreshToken = jwtUtils.createRefreshToken(authentication);
 
-            com.titta.api.features.auth.dto.response.RefreshTokenResponse responsePayload = com.titta.api.features.auth.dto.response.RefreshTokenResponse
-                    .builder()
+            RefreshTokenResponse responsePayload = RefreshTokenResponse.builder()
                     .jwt(newAccessToken)
                     .message("Tokens refrescados exitosamente")
                     .build();
@@ -151,32 +148,25 @@ public class AuthServiceImpl implements AuthService {
                     .refreshToken(newRefreshToken)
                     .build();
         } catch (Exception e) {
-            log.error("Error al refrescar el token: {}", e.getMessage());
-            throw new BadCredentialsException("Refresh token inválido o expirado", e);
+            log.error("Error al refrescar token", e);
+            throw new BadCredentialsException("Refresh token invalido o expirado", e);
         }
     }
 
     @Override
+    @Transactional
     public void logoutUser(String refreshToken, String authorizationHeader) {
         if (refreshToken != null && !refreshToken.trim().isEmpty()) {
             try {
                 DecodedJWT decodedJWT = jwtUtils.validateRefreshToken(refreshToken);
                 String jti = jwtUtils.extractJti(decodedJWT);
 
-                LocalDateTime expiracion = decodedJWT.getExpiresAt().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-
-                TokenBlacklist tokenBlacklist = TokenBlacklist.builder()
-                        .jti(jti)
-                        .fechaExpiracion(expiracion)
-                        .build();
-
-                tokenBlacklistRepository.save(tokenBlacklist);
-                log.info("Refresh Token (JTI: {}) añadido a la blacklist (logout).", jti);
-
+                if (jti != null && !jti.isBlank()) {
+                    blacklistToken(jti, toLocalDateTime(decodedJWT));
+                    log.info("Refresh token invalidado en logout. JTI={}", jti);
+                }
             } catch (Exception e) {
-                log.warn("Intento de logout con refresh token inválido: {}", e.getMessage());
+                log.warn("Intento de logout con refresh token invalido: {}", e.getMessage());
             }
         }
 
@@ -186,28 +176,33 @@ public class AuthServiceImpl implements AuthService {
                 DecodedJWT decodedJWT = jwtUtils.validateAccessToken(accessToken);
                 String jti = decodedJWT.getId();
 
-                LocalDateTime expiracion = decodedJWT.getExpiresAt().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-
-                TokenBlacklist tokenBlacklist = TokenBlacklist.builder()
-                        .jti(jti)
-                        .fechaExpiracion(expiracion)
-                        .build();
-
-                tokenBlacklistRepository.save(tokenBlacklist);
-                log.info("Access Token (JTI: {}) añadido a la blacklist (logout).", jti);
-
+                if (jti != null && !jti.isBlank()) {
+                    blacklistToken(jti, toLocalDateTime(decodedJWT));
+                    log.info("Access token invalidado en logout. JTI={}", jti);
+                }
             } catch (TokenExpiredException e) {
-                log.debug("Access token ya está expirado, no se añade a blacklist.");
+                log.debug("Access token ya expirado, no se agrega a blacklist.");
             } catch (Exception e) {
-                log.warn("Intento de logout con access token inválido: {}", e.getMessage());
+                log.warn("Intento de logout con access token invalido: {}", e.getMessage());
             }
         }
     }
 
-    private Usuario buildUsuarioClain(String username) {
+    private void blacklistToken(String jti, LocalDateTime expiracion) {
+        TokenBlacklist tokenBlacklist = TokenBlacklist.builder()
+                .jti(jti)
+                .fechaExpiracion(expiracion)
+                .build();
+        tokenBlacklistRepository.save(tokenBlacklist);
+    }
 
+    private LocalDateTime toLocalDateTime(DecodedJWT decodedJWT) {
+        return decodedJWT.getExpiresAt().toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+    }
+
+    private Usuario buildUsuarioClaim(String username) {
         Usuario usuario = usuarioRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("El usuario " + username + " no existe."));
 
